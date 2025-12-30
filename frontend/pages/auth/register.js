@@ -210,7 +210,7 @@ export default function Register() {
 
                     <div style={{ marginBottom: 20, padding: 16, background: 'rgba(245, 158, 11, 0.2)', borderRadius: 8, border: '1px solid rgba(245, 158, 11, 0.4)' }}>
                         <div style={{ color: '#fbbf24', fontSize: 12 }}>
-                            <strong>Important:</strong> Password recovery by SMS is currently disabled. Keep your password safe.
+                            <strong>Important:</strong> Password recovery is by Email only. If you don't provide an email, you'll need to contact support to recover your account.
                         </div>
                     </div>
 
