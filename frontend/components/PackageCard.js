@@ -27,15 +27,15 @@ export default function PackageCard({ pkg, onBuy, onFreeTrial }) {
 
     return (
         <div className="card" role="article" style={{
-            border: isFreeTrial ? '1px solid #a7f3d0' : '1px solid #e5e7eb',
-            background: isFreeTrial ? '#f0fdfa' : 'white'
+            border: isFreeTrial ? '1px solid rgba(16, 185, 129, 0.4)' : '1px solid rgba(47, 231, 245, 0.2)',
+            background: isFreeTrial ? 'rgba(16, 185, 129, 0.1)' : 'var(--ivynex-panel)'
         }}>
             <div className="row space-between">
                 <h3>{pkg.name}</h3>
                 <div className="kv">{Math.round(pkg.durationSeconds / 3600)} hr</div>
             </div>
 
-            <div className="price" style={{ color: isFreeTrial ? '#10b981' : 'var(--brand-1)' }}>
+            <div className="price" style={{ color: isFreeTrial ? '#10b981' : 'var(--ivynex-primary)' }}>
                 {isFreeTrial ? 'FREE' : `KES ${pkg.priceKES}`}
             </div>
             <div className="meta">
@@ -45,15 +45,20 @@ export default function PackageCard({ pkg, onBuy, onFreeTrial }) {
                             {pkg.pointsRequired} points required
                         </span>
                         {pkg.pointsEarned > 0 && (
-                            <span style={{ color: '#059669', marginLeft: '8px' }}>
+                            <span style={{ color: '#10b981', marginLeft: '8px' }}>
                                 • Earn {pkg.pointsEarned} points
                             </span>
                         )}
+                        <span> • {pkg.devicesAllowed} device(s)</span>
                     </>
+                ) : isFreeTrial ? (
+                    <span>{pkg.devicesAllowed} device(s)</span>
                 ) : (
-                    <span>Speed: {Math.round(pkg.speedKbps / 1000 * 10) / 10} Mbps</span>
+                    <>
+                        <span>Speed: {Math.round(pkg.speedKbps / 1000 * 10) / 10} Mbps</span>
+                        <span> • {pkg.devicesAllowed} device(s)</span>
+                    </>
                 )}
-                <span> • {pkg.devicesAllowed} device(s)</span>
             </div>
 
             <div style={{ marginTop: 14 }} className="row">

@@ -255,7 +255,8 @@ export default function Home() {
 
                 <section className="hero">
                     <div style={{ flex: 1 }} className="hero-text">
-                        <h1>Eco Wifi — Fast local hotspot</h1>
+                        <h1>Welcome to Ivynex Wi-Fi</h1>
+                        <p style={{ fontSize: 18, color: 'var(--ivynex-accent)', fontWeight: 500, marginBottom: 16 }}>Tap.Pay.Connect.</p>
                         <p>Choose a package and get online instantly. For now, use vouchers to activate a package on your device.</p>
                         <div style={{ marginTop: 12 }} className="row">
                             <Link href="/ads" className="btn ghost">See Ads & Promos</Link>
@@ -265,8 +266,7 @@ export default function Home() {
                     </div>
                     <div style={{ width: 200 }} className="center">
                         <div style={{ textAlign: 'center' }}>
-                            <div style={{ width: 110, height: 110, borderRadius: 20, background: 'linear-gradient(135deg,var(--brand-1),var(--accent))', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#042f2e', fontWeight: 800 }}>Eco</div>
-                            <div className="kv" style={{ marginTop: 8 }}>SSID: <strong>Eco Wifi</strong></div>
+                            <div className="kv" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>SSID: <strong style={{ color: 'var(--ivynex-accent)' }}>Ivynex Wi-Fi</strong></div>
                         </div>
                     </div>
                 </section>
@@ -294,8 +294,8 @@ export default function Home() {
                 </section>
 
                 <section className="footer">
-                    <div>Eco Wifi · Evo Tech Solutions</div>
-                    <div style={{ marginTop: 8 }}>© {new Date().getFullYear()} · Simple hotspot portal</div>
+                    <div style={{ color: 'var(--ivynex-accent)', fontWeight: 500 }}>© Ivynex — Tap.Pay.Connect.</div>
+                    <div style={{ marginTop: 8, color: 'var(--ivynex-muted)' }}>© {new Date().getFullYear()} · Premium ISP hotspot portal</div>
                 </section>
             </main>
 

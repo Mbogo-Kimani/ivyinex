@@ -48,7 +48,7 @@ export default function Ads() {
                 {
                     id: 4,
                     title: 'Local Business Directory',
-                    content: 'Discover local businesses in our area. Many offer special discounts for Eco Wifi users!',
+                    content: 'Discover local businesses in our area. Many offer special discounts for Ivynex users!',
                     type: 'directory',
                     cta: 'Browse Directory',
                     image: '🏪',
@@ -83,24 +83,28 @@ export default function Ads() {
     return (
         <>
             <Header />
-            <div style={{ padding: 20, minHeight: '100vh', background: 'linear-gradient(135deg, #f0fdfa 0%, #ecfdf5 100%)' }}>
+            <div style={{ padding: 20, minHeight: '100vh', background: 'linear-gradient(180deg, #081425 0%, #1C3D50 100%)' }}>
                 <div className="container">
                     {/* Welcome Section */}
                     <div style={{ 
-                        background: 'linear-gradient(135deg, var(--brand-1), var(--accent))', 
+                        background: 'linear-gradient(135deg, var(--ivynex-primary) 0%, var(--ivynex-accent) 100%)', 
                         color: 'white', 
                         padding: 24, 
                         borderRadius: 16, 
                         marginBottom: 24,
-                        textAlign: 'center'
+                        textAlign: 'center',
+                        boxShadow: '0 8px 24px rgba(47, 231, 245, 0.3)'
                     }}>
-                        <h1 style={{ marginBottom: 8, fontSize: 28 }}>
+                        <h1 style={{ marginBottom: 8, fontSize: 32, fontWeight: 700 }}>
                             {autoReconnected ? '🔄 Welcome Back!' : '🎉 You\'re Connected!'}
                         </h1>
+                        <p style={{ fontSize: 18, fontWeight: 500, marginBottom: 8 }}>
+                            Tap.Pay.Connect.
+                        </p>
                         <p style={{ fontSize: 16, opacity: 0.9, marginBottom: 16 }}>
                             {autoReconnected 
                                 ? 'You\'ve been automatically reconnected! Your subscription is still active.'
-                                : 'Welcome to Eco Wifi! Check out our latest promotions and community updates below.'
+                                : 'Welcome to Ivynex! Check out our latest promotions and community updates below.'
                             }
                         </p>
                         <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
@@ -116,16 +120,17 @@ export default function Ads() {
                     {/* Featured Promotions */}
                     {featuredAds.length > 0 && (
                         <section style={{ marginBottom: 32 }}>
-                            <h2 style={{ marginBottom: 16, color: 'var(--brand-2)' }}>🔥 Featured Promotions</h2>
+                            <h2 style={{ marginBottom: 16, color: 'var(--ivynex-accent)', fontWeight: 600 }}>🔥 Featured Promotions</h2>
                             <div style={{ display: 'grid', gap: 16, gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
                                 {featuredAds.map(ad => (
                                     <div key={ad.id} style={{
-                                        background: 'white',
+                                        background: 'var(--ivynex-panel)',
                                         padding: 20,
                                         borderRadius: 12,
-                                        boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-                                        border: '2px solid var(--accent)',
-                                        position: 'relative'
+                                        boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
+                                        border: '2px solid var(--ivynex-accent)',
+                                        position: 'relative',
+                                        color: 'white'
                                     }}>
                                         <div style={{
                                             position: 'absolute',
@@ -155,9 +160,9 @@ export default function Ads() {
                                             }}>
                                                 {ad.image}
                                             </div>
-                                            <h3 style={{ margin: 0, color: 'var(--brand-2)' }}>{ad.title}</h3>
+                                            <h3 style={{ margin: 0, color: 'var(--ivynex-accent)', fontWeight: 600 }}>{ad.title}</h3>
                                         </div>
-                                        <p style={{ marginBottom: 16, color: '#666', lineHeight: 1.5 }}>{ad.content}</p>
+                                        <p style={{ marginBottom: 16, color: 'rgba(255, 255, 255, 0.8)', lineHeight: 1.5 }}>{ad.content}</p>
                                         <button className="btn" style={{ width: '100%' }}>
                                             {ad.cta}
                                         </button>
@@ -169,7 +174,7 @@ export default function Ads() {
 
                     {/* Regular Ads */}
                     <section>
-                        <h2 style={{ marginBottom: 16, color: 'var(--brand-2)' }}>📢 Community Updates</h2>
+                        <h2 style={{ marginBottom: 16, color: 'var(--ivynex-accent)', fontWeight: 600 }}>📢 Community Updates</h2>
                         {loading ? (
                             <div style={{ textAlign: 'center', padding: 40 }}>
                                 <div style={{ fontSize: 24, marginBottom: 12 }}>⏳</div>
@@ -179,20 +184,23 @@ export default function Ads() {
                             <div style={{ display: 'grid', gap: 16, gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
                                 {regularAds.map(ad => (
                                     <div key={ad.id} style={{
-                                        background: 'white',
+                                        background: 'var(--ivynex-panel)',
                                         padding: 20,
                                         borderRadius: 12,
-                                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                                        border: '1px solid #e5e7eb',
-                                        transition: 'transform 0.2s, box-shadow 0.2s'
+                                        boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                                        border: '1px solid rgba(47, 231, 245, 0.2)',
+                                        transition: 'transform 0.2s, box-shadow 0.2s',
+                                        color: 'white'
                                     }}
                                         onMouseEnter={(e) => {
                                             e.currentTarget.style.transform = 'translateY(-2px)';
-                                            e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.15)';
+                                            e.currentTarget.style.boxShadow = '0 8px 16px rgba(47, 231, 245, 0.3)';
+                                            e.currentTarget.style.borderColor = 'var(--ivynex-accent)';
                                         }}
                                         onMouseLeave={(e) => {
                                             e.currentTarget.style.transform = 'translateY(0)';
-                                            e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+                                            e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
+                                            e.currentTarget.style.borderColor = 'rgba(47, 231, 245, 0.2)';
                                         }}
                                     >
                                         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12 }}>
@@ -210,9 +218,9 @@ export default function Ads() {
                                             }}>
                                                 {ad.image}
                                             </div>
-                                            <h3 style={{ margin: 0, color: 'var(--brand-2)', fontSize: 16 }}>{ad.title}</h3>
+                                            <h3 style={{ margin: 0, color: 'var(--ivynex-accent)', fontSize: 16, fontWeight: 600 }}>{ad.title}</h3>
                                         </div>
-                                        <p style={{ marginBottom: 16, color: '#666', lineHeight: 1.5, fontSize: 14 }}>{ad.content}</p>
+                                        <p style={{ marginBottom: 16, color: 'rgba(255, 255, 255, 0.8)', lineHeight: 1.5, fontSize: 14 }}>{ad.content}</p>
                                         <button className="btn ghost" style={{ width: '100%', fontSize: 14 }}>
                                             {ad.cta}
                                         </button>
@@ -226,13 +234,13 @@ export default function Ads() {
                     <div style={{
                         marginTop: 32,
                         padding: 20,
-                        background: 'rgba(255,255,255,0.8)',
+                        background: 'var(--ivynex-panel)',
                         borderRadius: 12,
                         textAlign: 'center',
-                        border: '1px solid rgba(0,0,0,0.1)'
+                        border: '1px solid rgba(47, 231, 245, 0.2)'
                     }}>
-                        <p style={{ margin: 0, color: '#666', fontSize: 14 }}>
-                            💡 <strong>Tip:</strong> This ad space generates revenue for Eco Wifi.
+                        <p style={{ margin: 0, color: 'rgba(255, 255, 255, 0.8)', fontSize: 14 }}>
+                            💡 <strong>Tip:</strong> This ad space generates revenue for Ivynex.
                             Local businesses can advertise here to reach our community of users.
                         </p>
                     </div>

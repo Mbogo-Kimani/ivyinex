@@ -104,23 +104,26 @@ export default function Login() {
     };
 
     return (
-        <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-            <div style={{ width: '100%', maxWidth: 480, background: 'white', padding: 32, borderRadius: 16, boxShadow: 'var(--shadow)' }}>
+        <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, background: 'linear-gradient(180deg, #081425 0%, #1C3D50 100%)' }}>
+            <div style={{ width: '100%', maxWidth: 480, background: 'var(--ivynex-panel)', padding: 32, borderRadius: 16, boxShadow: 'var(--shadow)', border: '1px solid rgba(47, 231, 245, 0.3)' }}>
                 <div style={{ textAlign: 'center', marginBottom: 32 }}>
-                    <h1 style={{ color: 'var(--brand-2)', fontSize: 28, marginBottom: 8 }}>
-                        Welcome Back
+                    <h1 style={{ color: 'var(--ivynex-accent)', fontSize: 32, marginBottom: 8, fontWeight: 700 }}>
+                        Welcome to Ivynex Wi-Fi
                     </h1>
-                    <p className="kv" style={{ fontSize: 16 }}>
+                    <p style={{ color: 'var(--ivynex-accent)', fontSize: 18, fontWeight: 500, marginBottom: 8 }}>
+                        Tap.Pay.Connect.
+                    </p>
+                    <p className="kv" style={{ fontSize: 16, color: 'rgba(255, 255, 255, 0.8)' }}>
                         Sign in to manage your subscriptions
                     </p>
                 </div>
 
                 {portalData && (
-                    <div style={{ marginBottom: 20, padding: 16, background: '#f0fdfa', borderRadius: 12, border: '1px solid #a7f3d0' }}>
-                        <div className="kv" style={{ color: '#065f46', fontSize: 14 }}>
+                    <div style={{ marginBottom: 20, padding: 16, background: 'rgba(33, 175, 233, 0.1)', borderRadius: 12, border: '1px solid rgba(47, 231, 245, 0.3)' }}>
+                        <div style={{ color: 'var(--ivynex-accent)', fontSize: 14 }}>
                             <strong>Device detected:</strong> {portalData.mac}
                         </div>
-                        <div className="kv" style={{ color: '#065f46', fontSize: 12, marginTop: 4 }}>
+                        <div style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: 12, marginTop: 4 }}>
                             Your device will be automatically linked after login
                         </div>
                     </div>
@@ -128,8 +131,8 @@ export default function Login() {
 
                 <form onSubmit={handleSubmit}>
                     {errors.general && (
-                        <div style={{ marginBottom: 20, padding: 12, background: '#fef2f2', borderRadius: 8, border: '1px solid #fca5a5' }}>
-                            <div style={{ color: '#dc2626', fontSize: 14 }}>{errors.general}</div>
+                        <div style={{ marginBottom: 20, padding: 12, background: 'rgba(239, 68, 68, 0.2)', borderRadius: 8, border: '1px solid rgba(239, 68, 68, 0.4)' }}>
+                            <div style={{ color: '#fca5a5', fontSize: 14 }}>{errors.general}</div>
                         </div>
                     )}
 
@@ -145,7 +148,7 @@ export default function Login() {
                             placeholder="07XXXXXXXX, 01XXXXXXXX, 7XXXXXXXX, 1XXXXXXXX, 254XXXXXXXXX, or +254XXXXXXXXX"
                             disabled={formLoading}
                         />
-                        {errors.phone && <div style={{ color: '#dc2626', fontSize: 12, marginTop: 4 }}>{errors.phone}</div>}
+                        {errors.phone && <div style={{ color: '#fca5a5', fontSize: 12, marginTop: 4 }}>{errors.phone}</div>}
                     </div>
 
                     <div style={{ marginBottom: 24 }}>
@@ -160,7 +163,7 @@ export default function Login() {
                             placeholder="Enter your password"
                             disabled={formLoading}
                         />
-                        {errors.password && <div style={{ color: '#dc2626', fontSize: 12, marginTop: 4 }}>{errors.password}</div>}
+                        {errors.password && <div style={{ color: '#fca5a5', fontSize: 12, marginTop: 4 }}>{errors.password}</div>}
                     </div>
 
                     <button
@@ -169,7 +172,7 @@ export default function Login() {
                         disabled={formLoading}
                         style={{ width: '100%', marginBottom: 16 }}
                     >
-                        {formLoading ? 'Signing In...' : 'Sign In'}
+                        {formLoading ? 'Connecting...' : 'Connect to Internet'}
                     </button>
 
                     <div style={{ textAlign: 'center', marginBottom: 16 }}>

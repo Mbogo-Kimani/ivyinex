@@ -98,23 +98,26 @@ export default function Register() {
     };
 
     return (
-        <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-            <div style={{ width: '100%', maxWidth: 480, background: 'white', padding: 32, borderRadius: 16, boxShadow: 'var(--shadow)' }}>
+        <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, background: 'linear-gradient(180deg, #081425 0%, #1C3D50 100%)' }}>
+            <div style={{ width: '100%', maxWidth: 480, background: 'var(--ivynex-panel)', padding: 32, borderRadius: 16, boxShadow: 'var(--shadow)', border: '1px solid rgba(47, 231, 245, 0.3)' }}>
                 <div style={{ textAlign: 'center', marginBottom: 32 }}>
-                    <h1 style={{ color: 'var(--brand-2)', fontSize: 28, marginBottom: 8 }}>
-                        Create Account
+                    <h1 style={{ color: 'var(--ivynex-accent)', fontSize: 32, marginBottom: 8, fontWeight: 700 }}>
+                        Welcome to Ivynex Wi-Fi
                     </h1>
-                    <p className="kv" style={{ fontSize: 16 }}>
-                        Get faster access and track your subscriptions
+                    <p style={{ color: 'var(--ivynex-accent)', fontSize: 18, fontWeight: 500, marginBottom: 8 }}>
+                        Tap.Pay.Connect.
+                    </p>
+                    <p className="kv" style={{ fontSize: 16, color: 'rgba(255, 255, 255, 0.8)' }}>
+                        Create an account to get faster access and track your subscriptions
                     </p>
                 </div>
 
                 {portalData && (
-                    <div style={{ marginBottom: 20, padding: 16, background: '#f0fdfa', borderRadius: 12, border: '1px solid #a7f3d0' }}>
-                        <div className="kv" style={{ color: '#065f46', fontSize: 14 }}>
+                    <div style={{ marginBottom: 20, padding: 16, background: 'rgba(33, 175, 233, 0.1)', borderRadius: 12, border: '1px solid rgba(47, 231, 245, 0.3)' }}>
+                        <div style={{ color: 'var(--ivynex-accent)', fontSize: 14 }}>
                             <strong>Device detected:</strong> {portalData.mac}
                         </div>
-                        <div className="kv" style={{ color: '#065f46', fontSize: 12, marginTop: 4 }}>
+                        <div style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: 12, marginTop: 4 }}>
                             Your device will be automatically linked after registration
                         </div>
                     </div>
@@ -122,8 +125,8 @@ export default function Register() {
 
                 <form onSubmit={handleSubmit}>
                     {errors.general && (
-                        <div style={{ marginBottom: 20, padding: 12, background: '#fef2f2', borderRadius: 8, border: '1px solid #fca5a5' }}>
-                            <div style={{ color: '#dc2626', fontSize: 14 }}>{errors.general}</div>
+                        <div style={{ marginBottom: 20, padding: 12, background: 'rgba(239, 68, 68, 0.2)', borderRadius: 8, border: '1px solid rgba(239, 68, 68, 0.4)' }}>
+                            <div style={{ color: '#fca5a5', fontSize: 14 }}>{errors.general}</div>
                         </div>
                     )}
 
@@ -139,7 +142,7 @@ export default function Register() {
                             placeholder="Enter your full name"
                             disabled={formLoading}
                         />
-                        {errors.name && <div style={{ color: '#dc2626', fontSize: 12, marginTop: 4 }}>{errors.name}</div>}
+                        {errors.name && <div style={{ color: '#fca5a5', fontSize: 12, marginTop: 4 }}>{errors.name}</div>}
                     </div>
 
                     <div style={{ marginBottom: 20 }}>
@@ -154,7 +157,7 @@ export default function Register() {
                             placeholder="07XXXXXXXX, 01XXXXXXXX, 7XXXXXXXX, 1XXXXXXXX, 254XXXXXXXXX, or +254XXXXXXXXX"
                             disabled={formLoading}
                         />
-                        {errors.phone && <div style={{ color: '#dc2626', fontSize: 12, marginTop: 4 }}>{errors.phone}</div>}
+                        {errors.phone && <div style={{ color: '#fca5a5', fontSize: 12, marginTop: 4 }}>{errors.phone}</div>}
                     </div>
 
                     <div style={{ marginBottom: 20 }}>
@@ -169,7 +172,7 @@ export default function Register() {
                             placeholder="your@email.com"
                             disabled={formLoading}
                         />
-                        {errors.email && <div style={{ color: '#dc2626', fontSize: 12, marginTop: 4 }}>{errors.email}</div>}
+                        {errors.email && <div style={{ color: '#fca5a5', fontSize: 12, marginTop: 4 }}>{errors.email}</div>}
                     </div>
 
                     <div style={{ marginBottom: 20 }}>
@@ -184,8 +187,8 @@ export default function Register() {
                             placeholder="Create a strong password"
                             disabled={formLoading}
                         />
-                        {errors.password && <div style={{ color: '#dc2626', fontSize: 12, marginTop: 4 }}>{errors.password}</div>}
-                        <div className="kv" style={{ fontSize: 12, marginTop: 4 }}>
+                        {errors.password && <div style={{ color: '#fca5a5', fontSize: 12, marginTop: 4 }}>{errors.password}</div>}
+                        <div className="kv" style={{ fontSize: 12, marginTop: 4, color: 'rgba(255, 255, 255, 0.7)' }}>
                             Minimum 8 characters with at least one letter and one number
                         </div>
                     </div>
@@ -202,11 +205,11 @@ export default function Register() {
                             placeholder="Confirm your password"
                             disabled={formLoading}
                         />
-                        {errors.confirmPassword && <div style={{ color: '#dc2626', fontSize: 12, marginTop: 4 }}>{errors.confirmPassword}</div>}
+                        {errors.confirmPassword && <div style={{ color: '#fca5a5', fontSize: 12, marginTop: 4 }}>{errors.confirmPassword}</div>}
                     </div>
 
-                    <div style={{ marginBottom: 20, padding: 16, background: '#fef3c7', borderRadius: 8, border: '1px solid #f59e0b' }}>
-                        <div className="kv" style={{ color: '#92400e', fontSize: 12 }}>
+                    <div style={{ marginBottom: 20, padding: 16, background: 'rgba(245, 158, 11, 0.2)', borderRadius: 8, border: '1px solid rgba(245, 158, 11, 0.4)' }}>
+                        <div style={{ color: '#fbbf24', fontSize: 12 }}>
                             <strong>Important:</strong> Password recovery by SMS is currently disabled. Keep your password safe.
                         </div>
                     </div>
@@ -217,7 +220,7 @@ export default function Register() {
                         disabled={formLoading}
                         style={{ width: '100%', marginBottom: 16 }}
                     >
-                        {formLoading ? 'Creating Account...' : 'Create Account'}
+                        {formLoading ? 'Creating Account...' : 'Get Online'}
                     </button>
 
                     <div style={{ textAlign: 'center', marginBottom: 16 }}>

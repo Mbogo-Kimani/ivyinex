@@ -8,10 +8,9 @@ export default function Header({ onOpenVoucher, portalData }) {
     return (
         <header className="header container" role="banner" style={{ overflow: 'hidden' }}>
             <div className="brand">
-                <div className="logo">Eco</div>
                 <div>
-                    <div className="site-title">Eco Wifi</div>
-                    <div className="site-sub">Reliable community hotspot</div>
+                    <div className="site-title">Ivynex</div>
+                    <div className="site-sub">Tap.Pay.Connect.</div>
                 </div>
             </div>
 
@@ -39,11 +38,11 @@ export default function Header({ onOpenVoucher, portalData }) {
                     className="btn ghost show-sm"
                     aria-label="Toggle menu"
                     onClick={() => setMenuOpen(v => !v)}
-                    style={{ padding: '8px 12px' }}
+                    style={{ padding: '8px 12px', color: 'white' }}
                 >
-                    <span className="menu-text">{menuOpen ? 'Close' : 'Menu'}</span>
-                    <span className="hamburger-icon" style={{ display: 'none' }}>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <span className="menu-text" style={{ color: 'white', fontWeight: 600 }}>{menuOpen ? 'Close' : 'Menu'}</span>
+                    <span className="hamburger-icon" style={{ color: 'white' }}>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                             {menuOpen ? (
                                 <path d="M18 6L6 18M6 6l12 12" />
                             ) : (

@@ -113,12 +113,12 @@ export default function CheckoutModal({ open, onClose, pkg, onRedeem, portalData
                 </p>
 
                 {portalData?.mac && (
-                    <div style={{ marginTop: 12, padding: 12, background: '#f0fdfa', borderRadius: 8, border: '1px solid #a7f3d0' }}>
-                        <div className="kv" style={{ fontSize: 12, color: '#065f46' }}>
+                    <div style={{ marginTop: 12, padding: 12, background: 'rgba(33, 175, 233, 0.1)', borderRadius: 8, border: '1px solid rgba(47, 231, 245, 0.3)' }}>
+                        <div style={{ fontSize: 12, color: 'var(--ivynex-accent)' }}>
                             <strong>Device detected:</strong> {portalData.mac}
                         </div>
                         {macError && (
-                            <div style={{ color: '#dc2626', fontSize: 12, marginTop: 4 }}>{macError}</div>
+                            <div style={{ color: '#fca5a5', fontSize: 12, marginTop: 4 }}>{macError}</div>
                         )}
                     </div>
                 )}
@@ -131,11 +131,11 @@ export default function CheckoutModal({ open, onClose, pkg, onRedeem, portalData
 
                 {/* Points Information - Show if package supports points and user is authenticated */}
                 {isAuthenticated && pkg.pointsRequired > 0 && (
-                    <div style={{ marginTop: 16, padding: 12, background: '#f0f9ff', borderRadius: 8, border: '1px solid #0ea5e9' }}>
-                        <div className="kv" style={{ fontSize: 14, color: '#0c4a6e' }}>
+                    <div style={{ marginTop: 16, padding: 12, background: 'rgba(33, 175, 233, 0.1)', borderRadius: 8, border: '1px solid rgba(47, 231, 245, 0.3)' }}>
+                        <div style={{ fontSize: 14, color: 'var(--ivynex-accent)' }}>
                             <strong>Your Points:</strong> {loadingPoints ? 'Loading...' : userPoints}
                         </div>
-                        <div className="kv" style={{ fontSize: 12, color: '#0c4a6e', marginTop: 4 }}>
+                        <div style={{ fontSize: 12, color: 'rgba(255, 255, 255, 0.8)', marginTop: 4 }}>
                             {userPoints >= pkg.pointsRequired
                                 ? `✅ You have enough points to purchase this package`
                                 : `❌ You need ${pkg.pointsRequired - userPoints} more points`

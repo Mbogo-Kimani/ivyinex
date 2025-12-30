@@ -1,0 +1,182 @@
+[
+  {
+    "_id": "68e030775f938133d804fdcc",
+    "userId": null,
+    "amountKES": 10,
+    "provider": "daraja",
+    "status": "pending",
+    "createdAt": "2025-10-03T20:22:15.666Z",
+    "__v": 0
+  },
+  {
+    "_id": "68e030b05f938133d804fe0c",
+    "userId": null,
+    "amountKES": 10,
+    "provider": "daraja",
+    "status": "pending",
+    "createdAt": "2025-10-03T20:23:12.144Z",
+    "__v": 0
+  },
+  {
+    "_id": "68e032895f938133d805001b",
+    "userId": null,
+    "amountKES": 20,
+    "provider": "daraja",
+    "status": "pending",
+    "createdAt": "2025-10-03T20:31:05.251Z",
+    "__v": 0
+  },
+  {
+    "_id": "68e8083358b092f7e7f30408",
+    "userId": null,
+    "amountKES": 10,
+    "provider": "daraja",
+    "status": "pending",
+    "createdAt": "2025-10-09T19:08:35.372Z",
+    "__v": 0
+  },
+  {
+    "_id": "68e81065ca70beac643d751a",
+    "userId": null,
+    "amountKES": 10,
+    "provider": "daraja",
+    "status": "pending",
+    "createdAt": "2025-10-09T19:43:33.463Z",
+    "__v": 0
+  },
+  {
+    "_id": "68e8106fca70beac643d752b",
+    "userId": null,
+    "amountKES": 10,
+    "provider": "daraja",
+    "status": "pending",
+    "createdAt": "2025-10-09T19:43:43.365Z",
+    "__v": 0
+  },
+  {
+    "_id": "68e8107aca70beac643d753d",
+    "userId": null,
+    "amountKES": 10,
+    "provider": "daraja",
+    "status": "pending",
+    "createdAt": "2025-10-09T19:43:54.750Z",
+    "__v": 0
+  },
+  {
+    "_id": "68e81479ca70beac643d795f",
+    "userId": null,
+    "amountKES": 400,
+    "provider": "daraja",
+    "status": "pending",
+    "createdAt": "2025-10-09T20:00:57.644Z",
+    "__v": 0
+  },
+  {
+    "_id": "68e8192cca70beac643d7e3f",
+    "userId": null,
+    "amountKES": 10,
+    "provider": "daraja",
+    "status": "pending",
+    "createdAt": "2025-10-09T20:21:00.556Z",
+    "__v": 0
+  },
+  {
+    "_id": "68e81951ca70beac643d7e6b",
+    "userId": null,
+    "amountKES": 10,
+    "provider": "daraja",
+    "status": "pending",
+    "createdAt": "2025-10-09T20:21:37.332Z",
+    "__v": 0
+  },
+  {
+    "_id": "68eab4c896fcd2d7f7b31ed2",
+    "userId": null,
+    "amountKES": 550,
+    "provider": "daraja",
+    "status": "pending",
+    "createdAt": "2025-10-11T19:49:28.747Z",
+    "__v": 0
+  },
+  {
+    "_id": "68eab50696fcd2d7f7b31f19",
+    "userId": null,
+    "amountKES": 1000,
+    "provider": "daraja",
+    "status": "pending",
+    "createdAt": "2025-10-11T19:50:30.524Z",
+    "__v": 0
+  },
+  {
+    "_id": "68eab50d96fcd2d7f7b31f27",
+    "userId": null,
+    "amountKES": 1000,
+    "provider": "daraja",
+    "status": "pending",
+    "createdAt": "2025-10-11T19:50:37.228Z",
+    "__v": 0
+  },
+  {
+    "_id": "68f4a78f3375fcb8545be684",
+    "userId": null,
+    "amountKES": 10,
+    "provider": "daraja",
+    "status": "pending",
+    "createdAt": "2025-10-19T08:55:43.718Z",
+    "__v": 0
+  },
+  {
+    "_id": "691e30fb737846db6adb2ae7",
+    "userId": null,
+    "amountKES": 10,
+    "provider": "daraja",
+    "status": "pending",
+    "createdAt": "2025-11-19T21:04:59.891Z",
+    "__v": 0
+  },
+  {
+    "_id": "691e310f737846db6adb2b02",
+    "userId": null,
+    "amountKES": 10,
+    "provider": "daraja",
+    "status": "pending",
+    "createdAt": "2025-11-19T21:05:19.224Z",
+    "__v": 0
+  },
+  {
+    "_id": "691e341a0590e2f610d94d60",
+    "userId": null,
+    "amountKES": 20,
+    "provider": "daraja",
+    "status": "failed",
+    "createdAt": "2025-11-19T21:18:18.501Z",
+    "__v": 0,
+    "providerPayload": {
+      "error": "Failed to get Daraja access token: 400 - \"\""
+    }
+  },
+  {
+    "_id": "691e34370590e2f610d94d85",
+    "userId": null,
+    "amountKES": 20,
+    "provider": "daraja",
+    "status": "failed",
+    "createdAt": "2025-11-19T21:18:47.706Z",
+    "__v": 0,
+    "providerPayload": {
+      "error": "Failed to get Daraja access token: 400 - \"\""
+    }
+  },
+  {
+    "_id": "69515298997d59a9e8db9e1d",
+    "userId": null,
+    "amountKES": 20,
+    "provider": "daraja",
+    "status": "failed",
+    "createdAt": "2025-12-28T15:54:00.075Z",
+    "__v": 0,
+    "providerPayload": {
+      "error": "Failed to get Daraja access token: 400 - \"\""
+    }
+  }
+]
