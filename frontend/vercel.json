@@ -2,10 +2,10 @@
     "rewrites": [
         {
             "source": "/api/(.*)",
-            "destination": "https://eco-wifi.onrender.com/api/$1"
+            "destination": "https://ivyinex.onrender.com/api/$1"
         }
     ],
     "env": {
-        "NEXT_PUBLIC_API_URL": "https://eco-wifi.onrender.com"
+        "NEXT_PUBLIC_API_URL": "https://ivyinex.onrender.com"
     }
 }

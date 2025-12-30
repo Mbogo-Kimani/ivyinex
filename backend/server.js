@@ -17,9 +17,8 @@ const corsOptions = {
     if (!origin) return callback(null, true);
 
     const allowedOrigins = [
-      'https://ecowifi.vercel.app',
-      'https://eco-wifi.vercel.app',
-      'https://ecowififrontend-lfmzvchvq-mbogo-kims-projects.vercel.app',
+      'https://ivynex.vercel.app',
+      'https://ivynex.vercel.app',
       'http://localhost:3000',
       'http://localhost:3001',
       'http://localhost:3002',

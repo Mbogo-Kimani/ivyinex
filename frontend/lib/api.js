@@ -1,5 +1,5 @@
 // Get backend URL from environment variables
-const BACKEND = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || process.env.BACKEND_URL || 'https://eco-wifi.onrender.com';
+const BACKEND = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || process.env.BACKEND_URL || 'https://ivyinex.onrender.com';
 
 // Helper function to get auth headers
 function getAuthHeaders() {
