@@ -1,0 +1,295 @@
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-24T14:33:45.130Z"}
+{"level":"info","message":"MongoDB connection established","timestamp":"2025-10-24T14:33:45.201Z"}
+{"level":"info","message":"Server started on port 5000","timestamp":"2025-10-24T14:33:45.296Z"}
+{"level":"info","message":"Cleanup job started","timestamp":"2025-10-24T14:33:47.454Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-24T14:46:27.768Z"}
+{"level":"info","message":"MongoDB connection established","timestamp":"2025-10-24T14:46:27.778Z"}
+{"level":"info","message":"Server started on port 5000","timestamp":"2025-10-24T14:46:27.786Z"}
+{"level":"info","message":"Cleanup job started","timestamp":"2025-10-24T14:46:29.832Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-24T14:52:30.067Z"}
+{"level":"info","message":"MongoDB connection established","timestamp":"2025-10-24T14:52:30.078Z"}
+{"level":"info","message":"Server started on port 5000","timestamp":"2025-10-24T14:52:30.087Z"}
+{"level":"info","message":"Cleanup job started","timestamp":"2025-10-24T14:52:32.137Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-28T16:44:44.906Z"}
+{"level":"info","message":"MongoDB connection established","timestamp":"2025-10-28T16:44:44.931Z"}
+{"level":"info","message":"Server started on port 5000","timestamp":"2025-10-28T16:44:44.954Z"}
+{"level":"info","message":"Cleanup job started","timestamp":"2025-10-28T16:44:47.116Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-28T16:50:14.256Z"}
+{"level":"info","message":"MongoDB connection established","timestamp":"2025-10-28T16:50:14.268Z"}
+{"level":"info","message":"Server started on port 5000","timestamp":"2025-10-28T16:50:14.282Z"}
+{"level":"info","message":"Cleanup job started","timestamp":"2025-10-28T16:50:16.397Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-28T17:03:28.320Z"}
+{"level":"info","message":"MongoDB connection established","timestamp":"2025-10-28T17:03:28.330Z"}
+{"level":"info","message":"Server started on port 5000","timestamp":"2025-10-28T17:03:28.338Z"}
+{"level":"info","message":"Cleanup job started","timestamp":"2025-10-28T17:03:30.389Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-28T17:35:08.286Z"}
+{"level":"info","message":"MongoDB connection established","timestamp":"2025-10-28T17:35:08.296Z"}
+{"level":"info","message":"Server started on port 5000","timestamp":"2025-10-28T17:35:08.306Z"}
+{"level":"info","message":"Cleanup job started","timestamp":"2025-10-28T17:35:10.369Z"}
+{"level":"warn","message":"MongoDB disconnected","timestamp":"2025-10-28T18:33:52.239Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:33:53.231Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:33:54.077Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:33:55.015Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:33:56.014Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:33:57.036Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:33:58.141Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-28T18:33:58.475Z"}
+{"level":"warn","message":"MongoDB disconnected","timestamp":"2025-10-28T18:47:14.612Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:47:15.444Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:47:16.036Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:47:17.036Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:47:18.038Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:47:19.015Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:47:20.020Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:47:21.012Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:47:22.020Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:47:23.018Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:47:24.007Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:47:25.004Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:47:26.011Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:47:27.001Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:47:28.036Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:47:29.013Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:47:30.008Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-28T18:47:30.565Z"}
+{"level":"warn","message":"MongoDB disconnected","timestamp":"2025-10-28T18:51:56.148Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:51:57.002Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:51:58.015Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:51:59.014Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:00.014Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:01.010Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:02.010Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:03.006Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:04.015Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:05.012Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:06.006Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:07.013Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:08.015Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:09.015Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:10.006Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:11.005Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:12.008Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:13.005Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:14.009Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:15.014Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:16.012Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:17.010Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:18.012Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:19.027Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:20.008Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:21.006Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:22.012Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:23.013Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:24.004Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:25.006Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:26.011Z"}
+{"err":"getaddrinfo ENOTFOUND ac-l3tanwm-shard-00-02.pfhiprc.mongodb.net","level":"error","message":"cleanup job error","timestamp":"2025-10-28T18:52:26.172Z"}
+{"err":"getaddrinfo ENOTFOUND ac-l3tanwm-shard-00-02.pfhiprc.mongodb.net","level":"error","message":"cleanup job error","timestamp":"2025-10-28T18:52:26.220Z"}
+{"err":"getaddrinfo ENOTFOUND ac-l3tanwm-shard-00-02.pfhiprc.mongodb.net","level":"error","message":"cleanup job error","timestamp":"2025-10-28T18:52:26.227Z"}
+{"err":"getaddrinfo ENOTFOUND ac-l3tanwm-shard-00-02.pfhiprc.mongodb.net","level":"error","message":"cleanup job error","timestamp":"2025-10-28T18:52:26.233Z"}
+{"err":"getaddrinfo ENOTFOUND ac-l3tanwm-shard-00-02.pfhiprc.mongodb.net","level":"error","message":"cleanup job error","timestamp":"2025-10-28T18:52:26.238Z"}
+{"err":"getaddrinfo ENOTFOUND ac-l3tanwm-shard-00-02.pfhiprc.mongodb.net","level":"error","message":"cleanup job error","timestamp":"2025-10-28T18:52:26.241Z"}
+{"err":"getaddrinfo ENOTFOUND ac-l3tanwm-shard-00-02.pfhiprc.mongodb.net","level":"error","message":"cleanup job error","timestamp":"2025-10-28T18:52:26.252Z"}
+{"err":"getaddrinfo ENOTFOUND ac-l3tanwm-shard-00-02.pfhiprc.mongodb.net","level":"error","message":"cleanup job error","timestamp":"2025-10-28T18:52:26.257Z"}
+{"err":"getaddrinfo ENOTFOUND ac-l3tanwm-shard-00-02.pfhiprc.mongodb.net","level":"error","message":"cleanup job error","timestamp":"2025-10-28T18:52:26.261Z"}
+{"err":"getaddrinfo ENOTFOUND ac-l3tanwm-shard-00-02.pfhiprc.mongodb.net","level":"error","message":"cleanup job error","timestamp":"2025-10-28T18:52:26.269Z"}
+{"err":"getaddrinfo ENOTFOUND ac-l3tanwm-shard-00-02.pfhiprc.mongodb.net","level":"error","message":"cleanup job error","timestamp":"2025-10-28T18:52:26.274Z"}
+{"err":"getaddrinfo ENOTFOUND ac-l3tanwm-shard-00-02.pfhiprc.mongodb.net","level":"error","message":"cleanup job error","timestamp":"2025-10-28T18:52:26.283Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:27.005Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:28.014Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:29.008Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:30.007Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:31.016Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:32.011Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:33.014Z"}
+{"err":"getaddrinfo ENOTFOUND ac-l3tanwm-shard-00-02.pfhiprc.mongodb.net","level":"error","message":"cleanup job error","timestamp":"2025-10-28T18:52:33.187Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:34.013Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:35.009Z"}
+{"err":"getaddrinfo ENOTFOUND ac-l3tanwm-shard-00-02.pfhiprc.mongodb.net","level":"error","message":"cleanup job error","timestamp":"2025-10-28T18:52:35.558Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:36.009Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:37.003Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:38.001Z"}
+{"err":"getaddrinfo ENOTFOUND ac-l3tanwm-shard-00-02.pfhiprc.mongodb.net","level":"error","message":"cleanup job error","timestamp":"2025-10-28T18:52:38.360Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:39.015Z"}
+{"err":"getaddrinfo ENOTFOUND ac-l3tanwm-shard-00-02.pfhiprc.mongodb.net","level":"error","message":"cleanup job error","timestamp":"2025-10-28T18:52:39.794Z"}
+{"err":"getaddrinfo ENOTFOUND ac-l3tanwm-shard-00-02.pfhiprc.mongodb.net","level":"error","message":"cleanup job error","timestamp":"2025-10-28T18:52:39.809Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:40.009Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:41.002Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:42.005Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:43.001Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:44.014Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:45.009Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:46.011Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:47.009Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:48.005Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:49.002Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:50.003Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:51.007Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:52.012Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:53.009Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:54.003Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:55.007Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:56.016Z"}
+{"err":"getaddrinfo ENOTFOUND ac-l3tanwm-shard-00-02.pfhiprc.mongodb.net","level":"error","message":"Failed to log job error","timestamp":"2025-10-28T18:52:56.242Z"}
+{"err":"getaddrinfo ENOTFOUND ac-l3tanwm-shard-00-02.pfhiprc.mongodb.net","level":"error","message":"Failed to log job error","timestamp":"2025-10-28T18:52:56.245Z"}
+{"err":"getaddrinfo ENOTFOUND ac-l3tanwm-shard-00-02.pfhiprc.mongodb.net","level":"error","message":"Failed to log job error","timestamp":"2025-10-28T18:52:56.247Z"}
+{"err":"getaddrinfo ENOTFOUND ac-l3tanwm-shard-00-02.pfhiprc.mongodb.net","level":"error","message":"Failed to log job error","timestamp":"2025-10-28T18:52:56.248Z"}
+{"err":"getaddrinfo ENOTFOUND ac-l3tanwm-shard-00-02.pfhiprc.mongodb.net","level":"error","message":"Failed to log job error","timestamp":"2025-10-28T18:52:56.249Z"}
+{"err":"getaddrinfo ENOTFOUND ac-l3tanwm-shard-00-02.pfhiprc.mongodb.net","level":"error","message":"Failed to log job error","timestamp":"2025-10-28T18:52:56.253Z"}
+{"err":"getaddrinfo ENOTFOUND ac-l3tanwm-shard-00-02.pfhiprc.mongodb.net","level":"error","message":"Failed to log job error","timestamp":"2025-10-28T18:52:56.268Z"}
+{"err":"getaddrinfo ENOTFOUND ac-l3tanwm-shard-00-02.pfhiprc.mongodb.net","level":"error","message":"Failed to log job error","timestamp":"2025-10-28T18:52:56.271Z"}
+{"err":"getaddrinfo ENOTFOUND ac-l3tanwm-shard-00-02.pfhiprc.mongodb.net","level":"error","message":"Failed to log job error","timestamp":"2025-10-28T18:52:56.273Z"}
+{"err":"getaddrinfo ENOTFOUND ac-l3tanwm-shard-00-02.pfhiprc.mongodb.net","level":"error","message":"Failed to log job error","timestamp":"2025-10-28T18:52:56.275Z"}
+{"err":"getaddrinfo ENOTFOUND ac-l3tanwm-shard-00-02.pfhiprc.mongodb.net","level":"error","message":"Failed to log job error","timestamp":"2025-10-28T18:52:56.285Z"}
+{"err":"getaddrinfo ENOTFOUND ac-l3tanwm-shard-00-02.pfhiprc.mongodb.net","level":"error","message":"Failed to log job error","timestamp":"2025-10-28T18:52:56.288Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:57.013Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:58.017Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:52:59.009Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:00.008Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:01.005Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:02.008Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:03.012Z"}
+{"err":"getaddrinfo ENOTFOUND ac-l3tanwm-shard-00-02.pfhiprc.mongodb.net","level":"error","message":"Failed to log job error","timestamp":"2025-10-28T18:53:03.200Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:04.007Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:05.003Z"}
+{"err":"getaddrinfo ENOTFOUND ac-l3tanwm-shard-00-02.pfhiprc.mongodb.net","level":"error","message":"Failed to log job error","timestamp":"2025-10-28T18:53:05.565Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:06.001Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:07.015Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:08.010Z"}
+{"err":"getaddrinfo ENOTFOUND ac-l3tanwm-shard-00-02.pfhiprc.mongodb.net","level":"error","message":"Failed to log job error","timestamp":"2025-10-28T18:53:08.366Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:09.007Z"}
+{"err":"getaddrinfo ENOTFOUND ac-l3tanwm-shard-00-02.pfhiprc.mongodb.net","level":"error","message":"Failed to log job error","timestamp":"2025-10-28T18:53:09.801Z"}
+{"err":"getaddrinfo ENOTFOUND ac-l3tanwm-shard-00-02.pfhiprc.mongodb.net","level":"error","message":"Failed to log job error","timestamp":"2025-10-28T18:53:09.816Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:10.003Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:11.004Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:12.015Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:13.005Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:14.002Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:15.004Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:16.016Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:17.003Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:18.016Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:19.003Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:20.014Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:21.047Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:22.017Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:23.015Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:24.002Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:25.001Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:26.012Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:27.013Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:28.011Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:29.011Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:30.009Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:31.006Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:32.003Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:33.001Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:34.004Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:35.012Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:36.008Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:37.009Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:38.007Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:39.005Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:40.003Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:41.014Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:42.014Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:43.005Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:44.009Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:45.008Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:46.007Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:47.010Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:48.011Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:49.012Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:50.007Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:51.006Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:52.018Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:53.011Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:54.015Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:55.013Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:56.014Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:57.011Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:58.010Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:53:59.010Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:54:00.010Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:54:01.008Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:54:02.010Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:54:03.011Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:54:04.015Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:54:05.004Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:54:06.006Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:54:07.010Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:54:08.010Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:54:09.004Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:54:10.004Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:54:11.006Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:54:12.000Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:54:13.004Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:54:14.000Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:54:15.004Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:54:16.008Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:54:17.005Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:54:18.008Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:54:19.010Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:54:20.005Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:54:21.014Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:54:22.018Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:54:23.019Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:54:24.027Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:54:25.041Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:54:26.069Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:54:27.006Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:54:28.007Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:54:29.020Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:54:30.007Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:54:31.003Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:54:32.003Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:54:33.013Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:54:34.013Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:54:35.007Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:54:36.017Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:54:37.016Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:54:38.013Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:54:39.011Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:54:40.005Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:54:41.003Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:54:42.012Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T18:54:43.012Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-28T18:54:43.280Z"}
+{"level":"warn","message":"MongoDB disconnected","timestamp":"2025-10-28T19:08:04.707Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T19:08:05.049Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T19:08:06.029Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T19:08:07.003Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T19:08:08.027Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T19:08:09.011Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T19:08:10.010Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T19:08:11.006Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T19:08:12.021Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T19:08:13.005Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T19:08:14.003Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T19:08:15.017Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T19:08:16.016Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T19:08:17.003Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T19:08:18.007Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T19:08:19.009Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T19:08:20.005Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T19:08:21.003Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T19:08:22.001Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T19:08:23.004Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T19:08:24.003Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T19:08:25.015Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T19:08:26.015Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T19:08:27.011Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T19:08:28.010Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T19:08:29.012Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T19:08:30.010Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T19:08:31.010Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T19:08:32.005Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T19:08:33.004Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T19:08:34.013Z"}
+{"err":"getaddrinfo ENOTFOUND ac-l3tanwm-shard-00-02.pfhiprc.mongodb.net","level":"error","message":"cleanup job error","timestamp":"2025-10-28T19:08:34.806Z"}
+{"err":"getaddrinfo ENOTFOUND ac-l3tanwm-shard-00-02.pfhiprc.mongodb.net","level":"error","message":"cleanup job error","timestamp":"2025-10-28T19:08:34.853Z"}
+{"err":"getaddrinfo ENOTFOUND ac-l3tanwm-shard-00-02.pfhiprc.mongodb.net","level":"error","message":"cleanup job error","timestamp":"2025-10-28T19:08:34.858Z"}
+{"err":"getaddrinfo ENOTFOUND ac-l3tanwm-shard-00-02.pfhiprc.mongodb.net","level":"error","message":"cleanup job error","timestamp":"2025-10-28T19:08:34.864Z"}
+{"err":"getaddrinfo ENOTFOUND ac-l3tanwm-shard-00-02.pfhiprc.mongodb.net","level":"error","message":"cleanup job error","timestamp":"2025-10-28T19:08:34.870Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-10-28T19:08:35.007Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-28T19:08:35.268Z"}

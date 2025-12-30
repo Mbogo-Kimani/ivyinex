@@ -1,0 +1,48 @@
+services:
+  - type: web
+    name: eco-wifi-backend
+    env: node
+    plan: starter
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        fromDatabase:
+          name: eco-wifi-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRY
+        value: 7d
+
+      # 🟢 Updated MikroTik relay configuration
+      - key: MI_HOST
+        value: https://exam-basic-prospective-moore.trycloudflare.com 
+      - key: MI_API_USER
+        value: kim_admin
+      - key: MI_API_PASS
+        value: "@Newkim2025."
+      - key: MI_API_PORT
+        value: 443
+      - key: MI_USE_SSL
+        value: true
+
+      - key: FRONTEND_URL
+        sync: false
+      - key: DARAJA_CONSUMER_KEY
+        sync: false
+      - key: DARAJA_CONSUMER_SECRET
+        sync: false
+      - key: DARAJA_BASE_URL
+        value: https://api.safaricom.co.ke
+      - key: DARAJA_CALLBACK_URL
+        sync: false
+
+databases:
+  - name: eco-wifi-db
+    plan: starter
+    databaseName: eco-wifi
