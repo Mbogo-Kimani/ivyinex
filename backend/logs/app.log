@@ -927,3 +927,13 @@
 {"level":"info","message":"MongoDB connection established","timestamp":"2025-12-30T20:43:29.788Z"}
 {"level":"info","message":"Server started on port 5000","timestamp":"2025-12-30T20:43:29.804Z"}
 {"level":"info","message":"Cleanup job started","timestamp":"2025-12-30T20:43:31.927Z"}
+{"level":"warn","message":"MongoDB disconnected","timestamp":"2025-12-30T21:00:34.338Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-12-30T21:00:35.012Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-12-30T21:00:36.004Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-12-30T21:00:37.008Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-12-30T21:00:38.011Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-12-30T21:00:39.005Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-12-30T21:00:40.001Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-12-30T21:00:41.014Z"}
+{"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2025-12-30T21:00:42.007Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-12-30T21:00:42.737Z"}

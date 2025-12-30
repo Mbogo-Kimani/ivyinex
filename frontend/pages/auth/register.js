@@ -102,7 +102,7 @@ export default function Register() {
             <div style={{ width: '100%', maxWidth: 480, background: 'var(--ivynex-panel)', padding: 32, borderRadius: 16, boxShadow: 'var(--shadow)', border: '1px solid rgba(47, 231, 245, 0.3)' }}>
                 <div style={{ textAlign: 'center', marginBottom: 32 }}>
                     <h1 style={{ color: 'var(--ivynex-accent)', fontSize: 32, marginBottom: 8, fontWeight: 700 }}>
-                        Welcome to Ivynex Wi-Fi
+                        Welcome to Ivynex Hotspot
                     </h1>
                     <p style={{ color: 'var(--ivynex-accent)', fontSize: 18, fontWeight: 500, marginBottom: 8 }}>
                         Tap.Pay.Connect.
@@ -220,7 +220,7 @@ export default function Register() {
                         disabled={formLoading}
                         style={{ width: '100%', marginBottom: 16 }}
                     >
-                        {formLoading ? 'Creating Account...' : 'Get Online'}
+                        {formLoading ? 'Creating Account...' : 'Create Account'}
                     </button>
 
                     <div style={{ textAlign: 'center', marginBottom: 16 }}>
