@@ -126,6 +126,12 @@ async function sendEmail({ to, toName, subject, htmlContent, textContent, params
             sendSmtpEmail.params = params;
         }
 
+        // Ensure API key is set before sending
+        const apiKey = process.env.BREVO_API_KEY;
+        if (apiKey && apiInstance) {
+            apiInstance.setApiKey(SibApiV3Sdk.TransactionalEmailsApiApiKeys.apiKey, apiKey);
+        }
+
         const result = await apiInstance.sendTransacEmail(sendSmtpEmail);
         
         logger.info('Email sent successfully', {
@@ -141,36 +147,58 @@ async function sendEmail({ to, toName, subject, htmlContent, textContent, params
         };
     } catch (error) {
         // Handle Brevo sender validation errors gracefully
-        const errorResponse = error.response?.body;
+        const errorResponse = error.response?.body || error.body;
         const errorCode = errorResponse?.code;
-        const errorMessage = errorResponse?.message || error.message;
+        const errorMessage = errorResponse?.message || error.message || String(error);
+        const statusCode = error.response?.statusCode || error.statusCode || error.status;
         
-        // Check for sender validation errors
-        if (errorCode === 'invalid_parameter' || errorMessage?.toLowerCase().includes('sender') || 
-            errorMessage?.toLowerCase().includes('from') || errorMessage?.toLowerCase().includes('verified')) {
-            logger.error('Brevo sender validation error', {
-                to,
-                fromAddress: config.fromAddress,
-                errorCode,
-                errorMessage,
-                hint: 'Ensure EMAIL_FROM_ADDRESS is verified in Brevo dashboard (Settings → Senders)',
-            });
-            
-            throw new Error('Sender email not verified in Brevo. Please verify your email address in the Brevo dashboard.');
-        }
-        
-        // Log other errors without exposing credentials
-        logger.error('Failed to send email', {
+        // Log full error details for debugging (server-side only)
+        logger.error('Failed to send email - Full error details', {
             to,
             fromAddress: config.fromAddress,
             subject,
             errorCode,
             errorMessage,
-            // Don't log full response body as it may contain sensitive data
-            hasErrorResponse: !!errorResponse,
+            statusCode,
+            errorName: error.name,
+            errorStack: error.stack,
+            errorResponse: errorResponse ? JSON.stringify(errorResponse).substring(0, 500) : null,
         });
+        
+        // Check for sender validation errors
+        if (errorCode === 'invalid_parameter' || 
+            errorMessage?.toLowerCase().includes('sender') || 
+            errorMessage?.toLowerCase().includes('from') || 
+            errorMessage?.toLowerCase().includes('verified') ||
+            errorMessage?.toLowerCase().includes('not authorized') ||
+            statusCode === 401 || statusCode === 403) {
+            logger.error('Brevo sender validation/authentication error', {
+                to,
+                fromAddress: config.fromAddress,
+                errorCode,
+                errorMessage,
+                statusCode,
+                hint: 'Ensure EMAIL_FROM_ADDRESS is verified in Brevo dashboard (Settings → Senders) and BREVO_API_KEY is correct',
+            });
+            
+            throw new Error('Sender email not verified in Brevo or API key invalid. Please verify your email address in the Brevo dashboard.');
+        }
+        
+        // Check for API key errors
+        if (errorMessage?.toLowerCase().includes('api key') || 
+            errorMessage?.toLowerCase().includes('unauthorized') ||
+            statusCode === 401) {
+            logger.error('Brevo API key error', {
+                to,
+                fromAddress: config.fromAddress,
+                errorMessage,
+                hint: 'Check BREVO_API_KEY in environment variables',
+            });
+            
+            throw new Error('Email service configuration error. Please contact support.');
+        }
 
-        // Don't expose sensitive information in error
+        // Don't expose sensitive information in error, but log it for debugging
         throw new Error('Failed to send email. Please try again later.');
     }
 }
