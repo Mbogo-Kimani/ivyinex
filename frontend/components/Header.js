@@ -9,7 +9,7 @@ export default function Header({ onOpenVoucher, portalData }) {
         <header className="header container" role="banner" style={{ overflow: 'hidden' }}>
             <div className="brand">
                 <div>
-                    <div className="site-title">Ivynex</div>
+                    <div className="site-title">Wifi Mtaani</div>
                     <div className="site-sub">Tap.Pay.Connect.</div>
                 </div>
             </div>

@@ -114,7 +114,7 @@ export default function CheckoutModal({ open, onClose, pkg, onRedeem, portalData
 
                 {portalData?.mac && (
                     <div style={{ marginTop: 12, padding: 12, background: 'rgba(33, 175, 233, 0.1)', borderRadius: 8, border: '1px solid rgba(47, 231, 245, 0.3)' }}>
-                        <div style={{ fontSize: 12, color: 'var(--ivynex-accent)' }}>
+                        <div style={{ fontSize: 12, color: 'var(--wifi-mtaani-accent)' }}>
                             <strong>Device detected:</strong> {portalData.mac}
                         </div>
                         {macError && (
@@ -132,7 +132,7 @@ export default function CheckoutModal({ open, onClose, pkg, onRedeem, portalData
                 {/* Points Information - Show if package supports points and user is authenticated */}
                 {isAuthenticated && pkg.pointsRequired > 0 && (
                     <div style={{ marginTop: 16, padding: 12, background: 'rgba(33, 175, 233, 0.1)', borderRadius: 8, border: '1px solid rgba(47, 231, 245, 0.3)' }}>
-                        <div style={{ fontSize: 14, color: 'var(--ivynex-accent)' }}>
+                        <div style={{ fontSize: 14, color: 'var(--wifi-mtaani-accent)' }}>
                             <strong>Your Points:</strong> {loadingPoints ? 'Loading...' : userPoints}
                         </div>
                         <div style={{ fontSize: 12, color: 'rgba(255, 255, 255, 0.8)', marginTop: 4 }}>

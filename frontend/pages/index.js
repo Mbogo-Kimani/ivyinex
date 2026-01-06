@@ -255,8 +255,8 @@ export default function Home() {
 
                 <section className="hero">
                     <div style={{ flex: 1 }} className="hero-text">
-                        <h1>Welcome to Ivynex Hotspot</h1>
-                        <p style={{ fontSize: 18, color: 'var(--ivynex-accent)', fontWeight: 500, marginBottom: 16 }}>Tap.Pay.Connect.</p>
+                        <h1>Welcome to Wifi Mtaani Hotspot</h1>
+                        <p style={{ fontSize: 18, color: 'var(--wifi-mtaani-accent)', fontWeight: 500, marginBottom: 16 }}>Tap.Pay.Connect.</p>
                         <p>Choose a package and get online instantly.</p>
                         <div style={{ marginTop: 12 }} className="row">
                             <Link href="/ads" className="btn ghost">See Ads & Promos</Link>
@@ -266,7 +266,7 @@ export default function Home() {
                     </div>
                     <div style={{ width: 200 }} className="center">
                         <div style={{ textAlign: 'center' }}>
-                            <div className="kv" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>SSID: <strong style={{ color: 'var(--ivynex-accent)' }}>Ivynex Hotspot</strong></div>
+                            <div className="kv" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>SSID: <strong style={{ color: 'var(--wifi-mtaani-accent)' }}>Wifi Mtaani Hotspot</strong></div>
                         </div>
                     </div>
                 </section>
@@ -294,15 +294,15 @@ export default function Home() {
                 </section>
 
                 <section className="footer">
-                    <div style={{ color: 'var(--ivynex-accent)', fontWeight: 500 }}>© Ivynex — Tap.Pay.Connect.</div>
-                    <div style={{ marginTop: 8, color: 'var(--ivynex-muted)' }}>
+                    <div style={{ color: 'var(--wifi-mtaani-accent)', fontWeight: 500 }}>© Wifi Mtaani — Tap.Pay.Connect.</div>
+                    <div style={{ marginTop: 8, color: 'var(--wifi-mtaani-muted)' }}>
                         © {new Date().getFullYear()} ·{' '}
                         <a 
                             href="https://mbogokim.vercel.app/" 
                             target="_blank" 
                             rel="noopener noreferrer"
                             style={{ 
-                                color: 'var(--ivynex-accent)', 
+                                color: 'var(--wifi-mtaani-accent)', 
                                 textDecoration: 'none',
                                 transition: 'opacity 0.2s ease'
                             }}

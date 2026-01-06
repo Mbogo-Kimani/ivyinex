@@ -1,19 +1,27 @@
 :root {
-    /* Ivynex Brand Colors */
-    --ivynex-primary: #21AFE9;      /* Main brand blue */
-    --ivynex-accent: #2FE7F5;       /* Cyan highlights / glow */
-    --ivynex-secondary: #1B7899;    /* Supporting blue */
-    --ivynex-dark: #081425;         /* Main background */
-    --ivynex-panel: #1C3D50;        /* Cards / navbar */
-    --ivynex-muted: #717982;        /* Secondary text */
+    /* Wifi Mtaani Brand Colors */
+    --wifi-mtaani-primary: #21AFE9;      /* Main brand blue */
+    --wifi-mtaani-accent: #2FE7F5;       /* Cyan highlights / glow */
+    --wifi-mtaani-secondary: #1B7899;    /* Supporting blue */
+    --wifi-mtaani-dark: #081425;         /* Main background */
+    --wifi-mtaani-panel: #1C3D50;        /* Cards / navbar */
+    --wifi-mtaani-muted: #717982;        /* Secondary text */
     
     /* Legacy variable mappings for compatibility */
-    --brand-1: var(--ivynex-primary);
-    --brand-2: var(--ivynex-accent);
-    --accent: var(--ivynex-accent);
-    --muted: var(--ivynex-muted);
-    --bg: var(--ivynex-dark);
-    --card: var(--ivynex-panel);
+    --brand-1: var(--wifi-mtaani-primary);
+    --brand-2: var(--wifi-mtaani-accent);
+    --accent: var(--wifi-mtaani-accent);
+    --muted: var(--wifi-mtaani-muted);
+    --bg: var(--wifi-mtaani-dark);
+    --card: var(--wifi-mtaani-panel);
+    
+    /* Backward compatibility aliases */
+    --ivynex-primary: var(--wifi-mtaani-primary);
+    --ivynex-accent: var(--wifi-mtaani-accent);
+    --ivynex-secondary: var(--wifi-mtaani-secondary);
+    --ivynex-dark: var(--wifi-mtaani-dark);
+    --ivynex-panel: var(--wifi-mtaani-panel);
+    --ivynex-muted: var(--wifi-mtaani-muted);
     --glass: rgba(33, 175, 233, 0.1);
     --shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
     --radius: 12px;
@@ -60,7 +68,7 @@ button {
     justify-content: space-between;
     padding: 18px 8px;
     border-radius: 12px;
-    background: linear-gradient(135deg, var(--ivynex-primary) 0%, var(--ivynex-accent) 100%);
+    background: linear-gradient(135deg, var(--wifi-mtaani-primary) 0%, var(--wifi-mtaani-accent) 100%);
     color: white;
     box-shadow: var(--shadow);
     -webkit-backdrop-filter: blur(6px);
@@ -77,12 +85,12 @@ button {
     width: 48px;
     height: 48px;
     border-radius: 10px;
-    background: linear-gradient(135deg, var(--ivynex-primary) 0%, var(--ivynex-accent) 100%);
+    background: linear-gradient(135deg, var(--wifi-mtaani-primary) 0%, var(--wifi-mtaani-accent) 100%);
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 700;
-    color: var(--ivynex-dark);
+    color: var(--wifi-mtaani-dark);
     font-size: 18px;
     box-shadow: 0 6px 18px rgba(33, 175, 233, 0.3);
 }
@@ -102,7 +110,7 @@ button {
     margin-top: 22px;
     padding: 32px;
     border-radius: 16px;
-    background: var(--ivynex-panel);
+    background: var(--wifi-mtaani-panel);
     border: 1px solid rgba(47, 231, 245, 0.2);
     display: flex;
     gap: 20px;
@@ -112,7 +120,7 @@ button {
 
 .hero-text h1 {
     font-size: 28px;
-    color: var(--ivynex-accent);
+    color: var(--wifi-mtaani-accent);
     line-height: 1.02;
     font-weight: 700;
 }
@@ -149,7 +157,7 @@ button {
 
 /* card */
 .card {
-    background: var(--ivynex-panel);
+    background: var(--wifi-mtaani-panel);
     border-radius: 12px;
     padding: 18px;
     box-shadow: var(--shadow);
@@ -160,19 +168,19 @@ button {
 .card:hover {
     transform: translateY(-6px) scale(1.02);
     box-shadow: 0 18px 38px rgba(47, 231, 245, 0.2);
-    border-color: var(--ivynex-accent);
+    border-color: var(--wifi-mtaani-accent);
 }
 
 .card h3 {
     font-size: 18px;
-    color: var(--ivynex-accent);
+    color: var(--wifi-mtaani-accent);
     font-weight: 600;
 }
 
 .card .price {
     font-weight: 800;
     font-size: 20px;
-    color: var(--ivynex-primary);
+    color: var(--wifi-mtaani-primary);
     margin-top: 8px
 }
 
@@ -189,7 +197,7 @@ button {
     gap: 10px;
     padding: 10px 14px;
     border-radius: 10px;
-    background: linear-gradient(135deg, var(--ivynex-primary) 0%, var(--ivynex-accent) 100%);
+    background: linear-gradient(135deg, var(--wifi-mtaani-primary) 0%, var(--wifi-mtaani-accent) 100%);
     color: white;
     border: none;
     cursor: pointer;
@@ -209,14 +217,14 @@ button {
 
 .btn.ghost {
     background: transparent;
-    color: var(--ivynex-accent);
+    color: var(--wifi-mtaani-accent);
     border: 1px solid rgba(47, 231, 245, 0.3);
     box-shadow: none;
 }
 
 .btn.ghost:hover {
     background: rgba(47, 231, 245, 0.1);
-    border-color: var(--ivynex-accent);
+    border-color: var(--wifi-mtaani-accent);
     box-shadow: 0 0 12px rgba(47, 231, 245, 0.3);
 }
 
@@ -268,9 +276,9 @@ button {
     margin-top: 40px;
     padding: 30px 16px;
     border-radius: 12px;
-    background: var(--ivynex-panel);
+    background: var(--wifi-mtaani-panel);
     border: 1px solid rgba(47, 231, 245, 0.1);
-    color: var(--ivynex-muted);
+    color: var(--wifi-mtaani-muted);
     font-size: 13px;
     text-align: center
 }
@@ -291,7 +299,7 @@ button {
 .modal {
     width: calc(100% - 40px);
     max-width: 640px;
-    background: var(--ivynex-panel);
+    background: var(--wifi-mtaani-panel);
     border: 1px solid rgba(47, 231, 245, 0.3);
     padding: 22px;
     border-radius: 12px;
@@ -330,19 +338,19 @@ textarea {
 
 .input:focus,
 textarea:focus {
-    border-color: var(--ivynex-accent);
+    border-color: var(--wifi-mtaani-accent);
     box-shadow: 0 0 12px rgba(47, 231, 245, 0.3);
 }
 
 .input::placeholder,
 textarea::placeholder {
-    color: var(--ivynex-muted);
+    color: var(--wifi-mtaani-muted);
 }
 
 label {
     font-weight: 600;
     font-size: 13px;
-    color: var(--ivynex-accent);
+    color: var(--wifi-mtaani-accent);
     display: block;
     margin-bottom: 8px
 }
@@ -360,10 +368,10 @@ label {
 }
 
 .toast {
-    background: var(--ivynex-panel);
+    background: var(--wifi-mtaani-panel);
     border-radius: 10px;
     box-shadow: var(--shadow);
-    border-left: 4px solid var(--ivynex-primary);
+    border-left: 4px solid var(--wifi-mtaani-primary);
     animation: slideIn 0.3s ease-out;
     max-width: 100%;
     min-width: 300px;
@@ -417,7 +425,7 @@ label {
 }
 
 .toast-close:hover {
-    color: var(--ivynex-accent)
+    color: var(--wifi-mtaani-accent)
 }
 
 @keyframes slideIn {
@@ -436,7 +444,7 @@ label {
 .ads-hero {
     padding: 28px;
     border-radius: 12px;
-    background: linear-gradient(135deg, var(--ivynex-primary) 0%, var(--ivynex-accent) 100%);
+    background: linear-gradient(135deg, var(--wifi-mtaani-primary) 0%, var(--wifi-mtaani-accent) 100%);
     margin-top: 20px;
     color: white;
 }
@@ -446,7 +454,7 @@ label {
     gap: 14px;
     padding: 14px;
     border-radius: 12px;
-    background: var(--ivynex-panel);
+    background: var(--wifi-mtaani-panel);
     border: 1px solid rgba(47, 231, 245, 0.2);
     color: white;
 }
@@ -454,7 +462,7 @@ label {
 /* tiny */
 .kv {
     font-size: 13px;
-    color: var(--ivynex-muted)
+    color: var(--wifi-mtaani-muted)
 }
 
 /* responsive helpers */

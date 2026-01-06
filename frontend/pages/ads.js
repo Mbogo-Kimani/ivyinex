@@ -48,7 +48,7 @@ export default function Ads() {
                 {
                     id: 4,
                     title: 'Local Business Directory',
-                    content: 'Discover local businesses in our area. Many offer special discounts for Ivynex users!',
+                    content: 'Discover local businesses in our area. Many offer special discounts for Wifi Mtaani users!',
                     type: 'directory',
                     cta: 'Browse Directory',
                     image: '🏪',
@@ -87,7 +87,7 @@ export default function Ads() {
                 <div className="container">
                     {/* Welcome Section */}
                     <div style={{ 
-                        background: 'linear-gradient(135deg, var(--ivynex-primary) 0%, var(--ivynex-accent) 100%)', 
+                        background: 'linear-gradient(135deg, var(--wifi-mtaani-primary) 0%, var(--wifi-mtaani-accent) 100%)', 
                         color: 'white', 
                         padding: 24, 
                         borderRadius: 16, 
@@ -104,7 +104,7 @@ export default function Ads() {
                         <p style={{ fontSize: 16, opacity: 0.9, marginBottom: 16 }}>
                             {autoReconnected 
                                 ? 'You\'ve been automatically reconnected! Your subscription is still active.'
-                                : 'Welcome to Ivynex! Check out our latest promotions and community updates below.'
+                                : 'Welcome to Wifi Mtaani! Check out our latest promotions and community updates below.'
                             }
                         </p>
                         <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
@@ -120,15 +120,15 @@ export default function Ads() {
                     {/* Featured Promotions */}
                     {featuredAds.length > 0 && (
                         <section style={{ marginBottom: 32 }}>
-                            <h2 style={{ marginBottom: 16, color: 'var(--ivynex-accent)', fontWeight: 600 }}>🔥 Featured Promotions</h2>
+                            <h2 style={{ marginBottom: 16, color: 'var(--wifi-mtaani-accent)', fontWeight: 600 }}>🔥 Featured Promotions</h2>
                             <div style={{ display: 'grid', gap: 16, gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
                                 {featuredAds.map(ad => (
                                     <div key={ad.id} style={{
-                                        background: 'var(--ivynex-panel)',
+                                        background: 'var(--wifi-mtaani-panel)',
                                         padding: 20,
                                         borderRadius: 12,
                                         boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
-                                        border: '2px solid var(--ivynex-accent)',
+                                        border: '2px solid var(--wifi-mtaani-accent)',
                                         position: 'relative',
                                         color: 'white'
                                     }}>
@@ -160,7 +160,7 @@ export default function Ads() {
                                             }}>
                                                 {ad.image}
                                             </div>
-                                            <h3 style={{ margin: 0, color: 'var(--ivynex-accent)', fontWeight: 600 }}>{ad.title}</h3>
+                                            <h3 style={{ margin: 0, color: 'var(--wifi-mtaani-accent)', fontWeight: 600 }}>{ad.title}</h3>
                                         </div>
                                         <p style={{ marginBottom: 16, color: 'rgba(255, 255, 255, 0.8)', lineHeight: 1.5 }}>{ad.content}</p>
                                         <button className="btn" style={{ width: '100%' }}>
@@ -174,7 +174,7 @@ export default function Ads() {
 
                     {/* Regular Ads */}
                     <section>
-                        <h2 style={{ marginBottom: 16, color: 'var(--ivynex-accent)', fontWeight: 600 }}>📢 Community Updates</h2>
+                        <h2 style={{ marginBottom: 16, color: 'var(--wifi-mtaani-accent)', fontWeight: 600 }}>📢 Community Updates</h2>
                         {loading ? (
                             <div style={{ textAlign: 'center', padding: 40 }}>
                                 <div style={{ fontSize: 24, marginBottom: 12 }}>⏳</div>
@@ -184,7 +184,7 @@ export default function Ads() {
                             <div style={{ display: 'grid', gap: 16, gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
                                 {regularAds.map(ad => (
                                     <div key={ad.id} style={{
-                                        background: 'var(--ivynex-panel)',
+                                        background: 'var(--wifi-mtaani-panel)',
                                         padding: 20,
                                         borderRadius: 12,
                                         boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
@@ -195,7 +195,7 @@ export default function Ads() {
                                         onMouseEnter={(e) => {
                                             e.currentTarget.style.transform = 'translateY(-2px)';
                                             e.currentTarget.style.boxShadow = '0 8px 16px rgba(47, 231, 245, 0.3)';
-                                            e.currentTarget.style.borderColor = 'var(--ivynex-accent)';
+                                            e.currentTarget.style.borderColor = 'var(--wifi-mtaani-accent)';
                                         }}
                                         onMouseLeave={(e) => {
                                             e.currentTarget.style.transform = 'translateY(0)';
@@ -218,7 +218,7 @@ export default function Ads() {
                                             }}>
                                                 {ad.image}
                                             </div>
-                                            <h3 style={{ margin: 0, color: 'var(--ivynex-accent)', fontSize: 16, fontWeight: 600 }}>{ad.title}</h3>
+                                            <h3 style={{ margin: 0, color: 'var(--wifi-mtaani-accent)', fontSize: 16, fontWeight: 600 }}>{ad.title}</h3>
                                         </div>
                                         <p style={{ marginBottom: 16, color: 'rgba(255, 255, 255, 0.8)', lineHeight: 1.5, fontSize: 14 }}>{ad.content}</p>
                                         <button className="btn ghost" style={{ width: '100%', fontSize: 14 }}>
@@ -234,13 +234,13 @@ export default function Ads() {
                     <div style={{
                         marginTop: 32,
                         padding: 20,
-                        background: 'var(--ivynex-panel)',
+                        background: 'var(--wifi-mtaani-panel)',
                         borderRadius: 12,
                         textAlign: 'center',
                         border: '1px solid rgba(47, 231, 245, 0.2)'
                     }}>
                         <p style={{ margin: 0, color: 'rgba(255, 255, 255, 0.8)', fontSize: 14 }}>
-                            💡 <strong>Tip:</strong> This ad space generates revenue for Ivynex.
+                            💡 <strong>Tip:</strong> This ad space generates revenue for Wifi Mtaani.
                             Local businesses can advertise here to reach our community of users.
                         </p>
                     </div>

@@ -221,7 +221,7 @@ export default function Portal() {
             <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, background: 'linear-gradient(180deg, #081425 0%, #1C3D50 100%)' }}>
                 <div style={{ textAlign: 'center', color: 'white' }}>
                     <div style={{ fontSize: 24, marginBottom: 12 }}>⏳</div>
-                    <p>Connecting you to Ivynex…</p>
+                    <p>Connecting you to Wifi Mtaani…</p>
                 </div>
             </div>
         );
@@ -229,10 +229,10 @@ export default function Portal() {
 
     return (
         <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, background: 'linear-gradient(180deg, #081425 0%, #1C3D50 100%)' }}>
-            <div style={{ width: '100%', maxWidth: 720, background: 'var(--ivynex-panel)', padding: 32, borderRadius: 16, boxShadow: 'var(--shadow)', border: '1px solid rgba(47, 231, 245, 0.3)' }}>
+            <div style={{ width: '100%', maxWidth: 720, background: 'var(--wifi-mtaani-panel)', padding: 32, borderRadius: 16, boxShadow: 'var(--shadow)', border: '1px solid rgba(47, 231, 245, 0.3)' }}>
                 <div style={{ textAlign: 'center', marginBottom: 24 }}>
-                    <h2 style={{ color: 'var(--ivynex-accent)', fontSize: 32, marginBottom: 8, fontWeight: 700 }}>Welcome to Ivynex Wi-Fi</h2>
-                    <p style={{ color: 'var(--ivynex-accent)', fontSize: 18, fontWeight: 500 }}>Tap.Pay.Connect.</p>
+                    <h2 style={{ color: 'var(--wifi-mtaani-accent)', fontSize: 32, marginBottom: 8, fontWeight: 700 }}>Welcome to Wifi Mtaani Wi-Fi</h2>
+                    <p style={{ color: 'var(--wifi-mtaani-accent)', fontSize: 18, fontWeight: 500 }}>Tap.Pay.Connect.</p>
                 </div>
 
                 <p style={{ color: 'rgba(255, 255, 255, 0.9)', fontSize: 16, marginBottom: 20, textAlign: 'center' }}>
@@ -240,10 +240,10 @@ export default function Portal() {
                 </p>
 
                 <div style={{ marginTop: 20, padding: 16, background: 'rgba(33, 175, 233, 0.1)', borderRadius: 12, border: '1px solid rgba(47, 231, 245, 0.3)' }}>
-                    <div style={{ fontSize: 14, color: 'var(--ivynex-accent)', marginBottom: 8 }}>
+                    <div style={{ fontSize: 14, color: 'var(--wifi-mtaani-accent)', marginBottom: 8 }}>
                         <strong>Device detected:</strong> {mac || 'Not available'}
                     </div>
-                    <div style={{ fontSize: 14, color: 'var(--ivynex-accent)', marginBottom: 8 }}>
+                    <div style={{ fontSize: 14, color: 'var(--wifi-mtaani-accent)', marginBottom: 8 }}>
                         <strong>IP Address:</strong> {ip || 'Not available'}
                     </div>
                     {deviceRegistered && (

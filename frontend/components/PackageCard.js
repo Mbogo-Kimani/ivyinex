@@ -28,14 +28,14 @@ export default function PackageCard({ pkg, onBuy, onFreeTrial }) {
     return (
         <div className="card" role="article" style={{
             border: isFreeTrial ? '1px solid rgba(16, 185, 129, 0.4)' : '1px solid rgba(47, 231, 245, 0.2)',
-            background: isFreeTrial ? 'rgba(16, 185, 129, 0.1)' : 'var(--ivynex-panel)'
+            background: isFreeTrial ? 'rgba(16, 185, 129, 0.1)' : 'var(--wifi-mtaani-panel)'
         }}>
             <div className="row space-between">
                 <h3>{pkg.name}</h3>
                 <div className="kv">{Math.round(pkg.durationSeconds / 3600)} hr</div>
             </div>
 
-            <div className="price" style={{ color: isFreeTrial ? '#10b981' : 'var(--ivynex-primary)' }}>
+            <div className="price" style={{ color: isFreeTrial ? '#10b981' : 'var(--wifi-mtaani-primary)' }}>
                 {isFreeTrial ? 'FREE' : `KES ${pkg.priceKES}`}
             </div>
             <div className="meta">

@@ -105,12 +105,12 @@ export default function Login() {
 
     return (
         <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, background: 'linear-gradient(180deg, #081425 0%, #1C3D50 100%)' }}>
-            <div style={{ width: '100%', maxWidth: 480, background: 'var(--ivynex-panel)', padding: 32, borderRadius: 16, boxShadow: 'var(--shadow)', border: '1px solid rgba(47, 231, 245, 0.3)' }}>
+            <div style={{ width: '100%', maxWidth: 480, background: 'var(--wifi-mtaani-panel)', padding: 32, borderRadius: 16, boxShadow: 'var(--shadow)', border: '1px solid rgba(47, 231, 245, 0.3)' }}>
                 <div style={{ textAlign: 'center', marginBottom: 32 }}>
-                    <h1 style={{ color: 'var(--ivynex-accent)', fontSize: 32, marginBottom: 8, fontWeight: 700 }}>
-                        Welcome to Ivynex Hotspot
+                    <h1 style={{ color: 'var(--wifi-mtaani-accent)', fontSize: 32, marginBottom: 8, fontWeight: 700 }}>
+                        Welcome to Wifi Mtaani Hotspot
                     </h1>
-                    <p style={{ color: 'var(--ivynex-accent)', fontSize: 18, fontWeight: 500, marginBottom: 8 }}>
+                    <p style={{ color: 'var(--wifi-mtaani-accent)', fontSize: 18, fontWeight: 500, marginBottom: 8 }}>
                         Tap.Pay.Connect.
                     </p>
                     <p className="kv" style={{ fontSize: 16, color: 'rgba(255, 255, 255, 0.8)' }}>
@@ -120,7 +120,7 @@ export default function Login() {
 
                 {portalData && (
                     <div style={{ marginBottom: 20, padding: 16, background: 'rgba(33, 175, 233, 0.1)', borderRadius: 12, border: '1px solid rgba(47, 231, 245, 0.3)' }}>
-                        <div style={{ color: 'var(--ivynex-accent)', fontSize: 14 }}>
+                        <div style={{ color: 'var(--wifi-mtaani-accent)', fontSize: 14 }}>
                             <strong>Device detected:</strong> {portalData.mac}
                         </div>
                         <div style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: 12, marginTop: 4 }}>
