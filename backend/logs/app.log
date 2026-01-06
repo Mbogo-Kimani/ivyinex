@@ -941,3 +941,7 @@
 {"level":"info","message":"MongoDB connection established","timestamp":"2026-01-06T08:17:13.870Z"}
 {"level":"info","message":"Server started on port 5000","timestamp":"2026-01-06T08:17:13.885Z"}
 {"level":"info","message":"Cleanup job started","timestamp":"2026-01-06T08:17:15.999Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2026-01-06T08:30:32.964Z"}
+{"level":"info","message":"MongoDB connection established","timestamp":"2026-01-06T08:30:32.974Z"}
+{"level":"info","message":"Server started on port 5000","timestamp":"2026-01-06T08:30:32.986Z"}
+{"level":"info","message":"Cleanup job started","timestamp":"2026-01-06T08:30:35.087Z"}

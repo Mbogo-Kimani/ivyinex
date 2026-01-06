@@ -147,6 +147,17 @@ export async function startCheckout(payload) {
     return data;
 }
 
+// Check payment status
+export async function checkPaymentStatus(paymentId) {
+    const res = await fetch(`/api/checkout/status/${paymentId}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to check payment status');
+    return data;
+}
+
 // Voucher APIs
 export async function redeemVoucher(payload) {
     // payload: { code, mac, ip, userId? }

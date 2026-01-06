@@ -16,6 +16,10 @@ export default function CheckoutPage() {
     const [phone, setPhone] = useState('');
     const [mac, setMac] = useState('');
     const [ip, setIp] = useState('');
+    const [paymentId, setPaymentId] = useState(null);
+    const [paymentStatus, setPaymentStatus] = useState(null);
+    const [polling, setPolling] = useState(false);
+    const [paymentError, setPaymentError] = useState(null);
 
     useEffect(() => {
         // Get package data from query params
@@ -60,10 +64,57 @@ export default function CheckoutPage() {
         }
     };
 
+    const startPaymentPolling = (paymentId) => {
+        setPolling(true);
+        setPaymentError(null);
+        
+        const pollInterval = setInterval(async () => {
+            try {
+                const status = await api.checkPaymentStatus(paymentId);
+                setPaymentStatus(status);
+                
+                if (status.status === 'success') {
+                    clearInterval(pollInterval);
+                    setPolling(false);
+                    showSuccess('Payment successful! Your subscription is now active.');
+                    // Redirect to account page after short delay
+                    setTimeout(() => {
+                        router.push('/account');
+                    }, 2000);
+                } else if (status.status === 'failed') {
+                    clearInterval(pollInterval);
+                    setPolling(false);
+                    setPaymentError(status.errorMessage || 'Payment failed. Please try again.');
+                    showError(status.errorMessage || 'Payment failed. Please try again.');
+                    setLoading(false);
+                }
+                // If still pending, continue polling
+            } catch (err) {
+                console.error('Payment status check error:', err);
+                // Continue polling even if there's an error (might be temporary)
+            }
+        }, 3000); // Poll every 3 seconds
+        
+        // Stop polling after 5 minutes (300 seconds)
+        setTimeout(() => {
+            clearInterval(pollInterval);
+            setPolling(false);
+            if (paymentStatus?.status !== 'success' && paymentStatus?.status !== 'failed') {
+                setPaymentError('Payment is taking longer than expected. Please check your payment status in your account or try again.');
+                showError('Payment is taking longer than expected. Please check your payment status in your account.');
+                setLoading(false);
+            }
+        }, 300000); // 5 minutes
+    };
+
     const handlePayment = async () => {
         if (!packageData) return;
 
         setLoading(true);
+        setPaymentError(null);
+        setPaymentStatus(null);
+        setPaymentId(null);
+        
         try {
             if (paymentMethod === 'points') {
                 // Use points to purchase
@@ -73,21 +124,26 @@ export default function CheckoutPage() {
                     ip: ip || null
                 });
                 showSuccess('Package purchased with points successfully!');
+                router.push('/account');
             } else {
                 // Use MPESA payment
-                await api.startCheckout({
+                const response = await api.startCheckout({
                     phone,
                     packageKey: packageData.key,
                     mac: mac || null,
                     ip: ip || null
                 });
+                
+                // Store payment ID and start polling
+                setPaymentId(response.paymentId);
                 showSuccess('Payment initiated! Please check your phone for STK Push.');
+                
+                // Start polling for payment status
+                startPaymentPolling(response.paymentId);
             }
-
-            router.push('/');
         } catch (err) {
             showError(err.message || 'Payment failed');
-        } finally {
+            setPaymentError(err.message || 'Payment failed');
             setLoading(false);
         }
     };
@@ -108,6 +164,14 @@ export default function CheckoutPage() {
             <main className="container">
                 <div style={{ maxWidth: 600, margin: '0 auto' }}>
                     <h1>Checkout</h1>
+                    
+                    {/* Add CSS for spinner animation */}
+                    <style jsx>{`
+                        @keyframes spin {
+                            0% { transform: rotate(0deg); }
+                            100% { transform: rotate(360deg); }
+                        }
+                    `}</style>
 
                     {/* Package Summary */}
                     <div className="card" style={{ marginBottom: 24 }}>
@@ -203,30 +267,100 @@ export default function CheckoutPage() {
                             />
                         </div>
 
+                        {/* Payment Status Display */}
+                        {polling && (
+                            <div style={{
+                                marginTop: 16,
+                                padding: 16,
+                                background: 'rgba(33, 175, 233, 0.1)',
+                                borderRadius: 8,
+                                border: '1px solid rgba(47, 231, 245, 0.3)'
+                            }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                    <div style={{
+                                        width: 20,
+                                        height: 20,
+                                        border: '3px solid var(--wifi-mtaani-accent)',
+                                        borderTop: '3px solid transparent',
+                                        borderRadius: '50%',
+                                        animation: 'spin 1s linear infinite'
+                                    }}></div>
+                                    <div>
+                                        <div style={{ color: 'var(--wifi-mtaani-accent)', fontWeight: 600 }}>
+                                            Waiting for payment confirmation...
+                                        </div>
+                                        <div style={{ fontSize: 12, color: 'rgba(255, 255, 255, 0.7)', marginTop: 4 }}>
+                                            Please complete the payment on your phone. This may take a few moments.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Payment Error Display */}
+                        {paymentError && (
+                            <div style={{
+                                marginTop: 16,
+                                padding: 16,
+                                background: 'rgba(239, 68, 68, 0.1)',
+                                borderRadius: 8,
+                                border: '1px solid rgba(239, 68, 68, 0.3)'
+                            }}>
+                                <div style={{ color: '#fca5a5', fontWeight: 600, marginBottom: 4 }}>
+                                    Payment Failed
+                                </div>
+                                <div style={{ color: '#fca5a5', fontSize: 14 }}>
+                                    {paymentError}
+                                </div>
+                                <button
+                                    className="btn"
+                                    onClick={() => {
+                                        setPaymentError(null);
+                                        setPaymentStatus(null);
+                                        setPaymentId(null);
+                                        setPolling(false);
+                                    }}
+                                    style={{
+                                        marginTop: 12,
+                                        background: '#ef4444',
+                                        color: 'white',
+                                        border: 'none',
+                                        fontSize: 14,
+                                        padding: '8px 16px'
+                                    }}
+                                >
+                                    Try Again
+                                </button>
+                            </div>
+                        )}
+
                         {/* Payment Button */}
                         <div style={{ marginTop: 24 }} className="row">
                             <button
                                 className="btn"
                                 onClick={handlePayment}
-                                disabled={loading || (paymentMethod === 'mpesa' && !phone)}
+                                disabled={loading || polling || (paymentMethod === 'mpesa' && !phone)}
                                 style={{
-                                    background: paymentMethod === 'points' ? '#10b981' : 'var(--brand-1)',
+                                    background: paymentMethod === 'points' ? '#10b981' : 'var(--wifi-mtaani-primary)',
                                     color: 'white',
-                                    border: 'none'
+                                    border: 'none',
+                                    opacity: (loading || polling) ? 0.6 : 1
                                 }}
                             >
-                                {loading ? 'Processing...' : (
+                                {loading ? 'Processing...' : polling ? 'Waiting for payment...' : (
                                     paymentMethod === 'points'
                                         ? `Use ${packageData.pointsRequired} Points`
                                         : `Pay KES ${packageData.priceKES}`
                                 )}
                             </button>
-                            <button
-                                className="btn ghost"
-                                onClick={() => router.push('/')}
-                            >
-                                Cancel
-                            </button>
+                            {!polling && (
+                                <button
+                                    className="btn ghost"
+                                    onClick={() => router.push('/')}
+                                >
+                                    Cancel
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
