@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
@@ -20,6 +20,7 @@ export default function CheckoutPage() {
     const [paymentStatus, setPaymentStatus] = useState(null);
     const [polling, setPolling] = useState(false);
     const [paymentError, setPaymentError] = useState(null);
+    const pollIntervalRef = useRef(null);
 
     useEffect(() => {
         // Get package data from query params
@@ -37,6 +38,14 @@ export default function CheckoutPage() {
         const portalData = JSON.parse(sessionStorage.getItem('portalData') || '{}');
         if (portalData.mac) setMac(portalData.mac);
         if (portalData.ip) setIp(portalData.ip);
+        
+        // Cleanup polling on unmount
+        return () => {
+            if (pollIntervalRef.current) {
+                clearInterval(pollIntervalRef.current);
+                pollIntervalRef.current = null;
+            }
+        };
     }, [router.query, isAuthenticated]);
 
     const loadPackageData = async (packageKey) => {
@@ -67,42 +76,96 @@ export default function CheckoutPage() {
     const startPaymentPolling = (paymentId) => {
         setPolling(true);
         setPaymentError(null);
+        setPaymentStatus(null);
         
-        const pollInterval = setInterval(async () => {
+        // Clear any existing interval
+        if (pollIntervalRef.current) {
+            clearInterval(pollIntervalRef.current);
+        }
+        
+        let pollCount = 0;
+        const maxPolls = 100; // Maximum 100 polls (5 minutes at 3 seconds each)
+        
+        pollIntervalRef.current = setInterval(async () => {
+            pollCount++;
+            
             try {
                 const status = await api.checkPaymentStatus(paymentId);
+                console.log(`[Poll ${pollCount}] Payment status:`, status); // Debug log
                 setPaymentStatus(status);
                 
+                // Check for success
                 if (status.status === 'success') {
-                    clearInterval(pollInterval);
+                    console.log('Payment successful, stopping polling');
+                    if (pollIntervalRef.current) {
+                        clearInterval(pollIntervalRef.current);
+                        pollIntervalRef.current = null;
+                    }
                     setPolling(false);
+                    setLoading(false);
                     showSuccess('Payment successful! Your subscription is now active.');
                     // Redirect to account page after short delay
                     setTimeout(() => {
                         router.push('/account');
                     }, 2000);
-                } else if (status.status === 'failed') {
-                    clearInterval(pollInterval);
+                    return;
+                } 
+                // Check for failure
+                else if (status.status === 'failed') {
+                    console.log('Payment failed, stopping polling. Error:', status.errorMessage);
+                    if (pollIntervalRef.current) {
+                        clearInterval(pollIntervalRef.current);
+                        pollIntervalRef.current = null;
+                    }
                     setPolling(false);
-                    setPaymentError(status.errorMessage || 'Payment failed. Please try again.');
-                    showError(status.errorMessage || 'Payment failed. Please try again.');
                     setLoading(false);
+                    const errorMsg = status.errorMessage || 'Payment failed. Please try again.';
+                    setPaymentError(errorMsg);
+                    showError(errorMsg);
+                    return;
                 }
                 // If still pending, continue polling
+                console.log(`[Poll ${pollCount}] Payment still pending, continuing...`);
             } catch (err) {
-                console.error('Payment status check error:', err);
+                console.error(`[Poll ${pollCount}] Payment status check error:`, err);
                 // Continue polling even if there's an error (might be temporary)
+                // But stop after max polls to prevent infinite polling
+                if (pollCount >= maxPolls) {
+                    console.log('Max polls reached, stopping');
+                    if (pollIntervalRef.current) {
+                        clearInterval(pollIntervalRef.current);
+                        pollIntervalRef.current = null;
+                    }
+                    setPolling(false);
+                    setLoading(false);
+                    setPaymentError('Payment status check failed. Please check your payment status in your account.');
+                    showError('Payment status check failed. Please check your payment status in your account.');
+                }
             }
         }, 3000); // Poll every 3 seconds
         
-        // Stop polling after 5 minutes (300 seconds)
+        // Stop polling after 5 minutes (100 polls * 3 seconds = 300 seconds)
         setTimeout(() => {
-            clearInterval(pollInterval);
-            setPolling(false);
-            if (paymentStatus?.status !== 'success' && paymentStatus?.status !== 'failed') {
-                setPaymentError('Payment is taking longer than expected. Please check your payment status in your account or try again.');
-                showError('Payment is taking longer than expected. Please check your payment status in your account.');
+            if (pollIntervalRef.current) {
+                clearInterval(pollIntervalRef.current);
+                pollIntervalRef.current = null;
+                setPolling(false);
                 setLoading(false);
+                // Check final status one more time
+                api.checkPaymentStatus(paymentId).then(status => {
+                    if (status.status === 'failed') {
+                        const errorMsg = status.errorMessage || 'Payment failed. Please try again.';
+                        setPaymentError(errorMsg);
+                        showError(errorMsg);
+                    } else if (status.status !== 'success') {
+                        setPaymentError('Payment is taking longer than expected. Please check your payment status in your account or try again.');
+                        showError('Payment is taking longer than expected. Please check your payment status in your account.');
+                    }
+                }).catch(err => {
+                    console.error('Final payment status check error:', err);
+                    setPaymentError('Unable to verify payment status. Please check your account or try again.');
+                    showError('Unable to verify payment status. Please check your account or try again.');
+                });
             }
         }, 300000); // 5 minutes
     };

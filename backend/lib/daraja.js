@@ -58,6 +58,21 @@ function validateConfig() {
   if (missing.length > 0) {
     throw new Error(`Missing required Daraja environment variables: ${missing.join(', ')}`);
   }
+
+  // Validate shortcode format
+  if (shortcode && !/^\d+$/.test(shortcode)) {
+    logger.warn('DARAJA_SHORTCODE format warning', { shortcode });
+  }
+
+  // Log configuration (without sensitive data)
+  logger.info('Daraja configuration loaded', {
+    baseUrl,
+    shortcode: shortcode ? `${shortcode.substring(0, 3)}***` : 'NOT SET',
+    hasConsumerKey: !!consumerKey,
+    hasConsumerSecret: !!consumerSecret,
+    hasPasskey: !!passkey,
+    callbackUrl: callbackUrl ? 'SET' : 'NOT SET'
+  });
 }
 
 async function getAccessToken() {
@@ -164,12 +179,28 @@ async function stkPush({ phone, amount, accountRef = 'Hotspot', transactionDesc 
 
     // Check for error in response
     if (res.data.errorCode || res.data.errorMessage) {
+      const errorCode = res.data.errorCode;
+      const errorMessage = res.data.errorMessage;
+      
       logger.error('STK push error response', {
-        errorCode: res.data.errorCode,
-        errorMessage: res.data.errorMessage,
-        response: res.data
+        errorCode,
+        errorMessage,
+        response: res.data,
+        shortcode: shortcode,
+        baseUrl: baseUrl
       });
-      throw new Error(`STK push failed: ${res.data.errorMessage || res.data.errorCode}`);
+      
+      // Provide user-friendly error messages for common Daraja errors
+      let friendlyMessage = errorMessage;
+      if (errorCode === '500.001.1001' || errorMessage?.includes('Merchant does not exist')) {
+        friendlyMessage = 'Merchant configuration error: The shortcode or passkey is incorrect. Please verify your Daraja credentials in the environment variables.';
+      } else if (errorCode === '400.002.02' || errorMessage?.includes('Invalid Access Token')) {
+        friendlyMessage = 'Authentication error: Invalid Daraja credentials. Please check your consumer key and secret.';
+      } else if (errorCode === '400.002.05' || errorMessage?.includes('Invalid shortcode')) {
+        friendlyMessage = 'Invalid shortcode: The business shortcode is not valid. Please check DARAJA_SHORTCODE.';
+      }
+      
+      throw new Error(`STK push failed: ${friendlyMessage} (Code: ${errorCode})`);
     }
 
     logger.info('STK push initiated successfully', {
@@ -183,14 +214,28 @@ async function stkPush({ phone, amount, accountRef = 'Hotspot', transactionDesc 
       // API responded with error status
       const status = error.response.status;
       const data = error.response.data;
+      
       logger.error('STK push request failed', {
         status,
         data,
         phone,
         amount,
-        message: error.message
+        message: error.message,
+        shortcode: shortcode,
+        baseUrl: baseUrl
       });
-      throw new Error(`STK push failed: ${status} - ${JSON.stringify(data)}`);
+      
+      // Check for specific error codes in response data
+      if (data?.errorCode === '500.001.1001' || data?.errorMessage?.includes('Merchant does not exist')) {
+        throw new Error('Merchant configuration error: The shortcode or passkey is incorrect. Please verify your Daraja credentials. Ensure DARAJA_SHORTCODE and DARAJA_PASSKEY match your Daraja portal settings.');
+      }
+      
+      // If error message already contains friendly message, use it
+      if (error.message.includes('Merchant configuration error') || error.message.includes('Authentication error') || error.message.includes('Invalid shortcode')) {
+        throw error;
+      }
+      
+      throw new Error(`STK push failed: ${status} - ${data?.errorMessage || JSON.stringify(data)}`);
     } else if (error.request) {
       // Request made but no response
       logger.error('STK push request timeout/no response', {

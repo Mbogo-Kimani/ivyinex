@@ -24,7 +24,10 @@ function getErrorMessage(resultCode, resultDesc) {
     1037: 'Payment request timed out. Please ensure your phone is online and try again.',
     1019: 'Transaction expired. Please initiate a new payment.',
     17: 'You cancelled the payment. Please try again.',
-    2001: 'Insufficient M-Pesa balance. Please top up your account and try again.'
+    2001: 'Insufficient M-Pesa balance. Please top up your account and try again.',
+    // Additional insufficient balance codes
+    2002: 'Insufficient M-Pesa balance. Please top up your account and try again.',
+    2003: 'Insufficient M-Pesa balance. Please top up your account and try again.'
   };
   
   // Return user-friendly message if available, otherwise use resultDesc
@@ -113,14 +116,31 @@ router.post('/start', async (req, res) => {
 
       // Update payment status to failed
       payment.status = 'failed';
-      payment.providerPayload = { error: err.message };
+      payment.providerPayload = { 
+        error: err.message,
+        failedAt: new Date()
+      };
       await payment.save();
 
-      // Return detailed error message for debugging (in production, you might want to hide some details)
+      // Check if it's a merchant configuration error
+      const isMerchantError = err.message.includes('Merchant') || 
+                             err.message.includes('shortcode') || 
+                             err.message.includes('passkey') ||
+                             err.message.includes('500.001.1001');
+
+      // Return user-friendly error message
+      // For merchant errors, provide helpful guidance
+      let userMessage = err.message;
+      if (isMerchantError) {
+        userMessage = 'Payment service configuration error. Please contact support or try again later.';
+      }
+
       res.status(500).json({
         error: 'STK push failed',
-        message: err.message,
-        paymentId: payment._id
+        message: userMessage,
+        paymentId: payment._id,
+        // Include detailed error for admin/debugging (can be removed in production)
+        details: process.env.NODE_ENV === 'development' ? err.message : undefined
       });
     }
   } catch (err) {
@@ -156,6 +176,7 @@ router.post('/daraja-callback', async (req, res) => {
   // Daraja callback raw body: req.body
   const cb = req.body;
   await LogModel.create({ level: 'info', source: 'daraja-callback', message: 'callback-received', metadata: cb });
+  logger.info('Daraja callback received', { body: JSON.stringify(cb).substring(0, 500) }); // Log first 500 chars for debugging
   // Real implementation must validate and extract CheckoutRequestID and ResultCode/ResultDesc
   try {
     // For MVP we expect the body contains checkoutRequestID and ResultCode
@@ -165,6 +186,14 @@ router.post('/daraja-callback', async (req, res) => {
     const checkoutRequestID = stkCallback.CheckoutRequestID || (stkCallback.checkoutRequestID);
     const resultCode = stkCallback.ResultCode !== undefined ? stkCallback.ResultCode : (stkCallback.resultCode || 0);
     const resultDesc = stkCallback.ResultDesc || stkCallback.resultDesc || 'OK';
+    
+    logger.info('Daraja callback parsed', { 
+      checkoutRequestID, 
+      resultCode, 
+      resultDesc,
+      hasBody: !!cb.Body,
+      hasStkCallback: !!stkCallback
+    });
 
     // Find payment by matching checkout id in providerPayload
     // CRITICAL: Only match by CheckoutRequestID, no fallback to prevent wrong payment matching
@@ -474,8 +503,26 @@ router.get('/status/:paymentId', async (req, res) => {
     let errorCode = null;
     if (payment.status === 'failed' && payment.providerPayload) {
       errorCode = payment.providerPayload.ResultCode || payment.providerPayload.errorCode;
-      errorMessage = payment.providerPayload.errorMessage || 
-                    getErrorMessage(errorCode, payment.providerPayload.ResultDesc);
+      // Check if errorMessage is already stored (from callback)
+      if (payment.providerPayload.errorMessage) {
+        errorMessage = payment.providerPayload.errorMessage;
+      } else if (errorCode) {
+        // Generate error message from result code
+        errorMessage = getErrorMessage(errorCode, payment.providerPayload.ResultDesc);
+      } else if (payment.providerPayload.ResultDesc) {
+        // Use ResultDesc if available
+        errorMessage = payment.providerPayload.ResultDesc;
+      } else {
+        errorMessage = 'Payment failed. Please try again.';
+      }
+      
+      logger.info('Payment status check - failed payment', {
+        paymentId: payment._id,
+        errorCode,
+        errorMessage,
+        hasProviderPayload: !!payment.providerPayload,
+        providerPayloadKeys: payment.providerPayload ? Object.keys(payment.providerPayload) : []
+      });
     }
 
     // Check if subscription was created for this payment
