@@ -19,6 +19,8 @@ import { useData } from '../hooks/useApi.jsx';
 import { apiMethods } from '../services/api';
 import { formatDate, formatNumber } from '../utils/formatters';
 import UserDetails from '../components/Users/UserDetails';
+import { useAuth } from '../hooks/useAuth';
+import toast from 'react-hot-toast';
 
 const Users = () => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -29,8 +31,11 @@ const Users = () => {
     const [showUserModal, setShowUserModal] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
 
-    // Fetch users data
-    const { data: usersData, loading: usersLoading, refetch: refetchUsers } = useData(apiMethods.getUsers);
+    // Get authentication status
+    const { isAuthenticated } = useAuth();
+
+    // Fetch users data only if authenticated
+    const { data: usersData, loading: usersLoading, refetch: refetchUsers } = useData(apiMethods.getUsers, [], { enabled: isAuthenticated });
 
     // Filter and search users
     const filteredUsers = usersData?.filter(user => {
@@ -83,13 +88,31 @@ const Users = () => {
         setShowUserModal(true);
     };
 
-    const handleSaveUser = async (updatedUser) => {
+    const handleCreateUser = () => {
+        setSelectedUser(null);
+        setShowUserModal(true);
+    };
+
+    const handleSaveUser = async (userData) => {
         try {
-            await apiMethods.updateUser(selectedUser._id, updatedUser);
+            if (selectedUser && selectedUser._id) {
+                // Update existing user
+                await apiMethods.updateUser(selectedUser._id, userData);
+                toast.success('User updated successfully');
+            } else {
+                // Create new user using admin endpoint
+                await apiMethods.createAdmin({
+                    name: userData.name,
+                    email: userData.email || `user${Date.now()}@example.com`,
+                    password: userData.password || 'TempPassword123!'
+                });
+                toast.success('User created successfully');
+            }
             refetchUsers();
             setShowUserModal(false);
         } catch (error) {
-            console.error('Error updating user:', error);
+            console.error('Error saving user:', error);
+            toast.error(selectedUser ? 'Failed to update user' : 'Failed to create user');
         }
     };
 
@@ -97,9 +120,11 @@ const Users = () => {
         if (window.confirm('Are you sure you want to delete this user?')) {
             try {
                 await apiMethods.deleteUser(userId);
+                toast.success('User deleted successfully');
                 refetchUsers();
             } catch (error) {
                 console.error('Error deleting user:', error);
+                toast.error('Failed to delete user');
             }
         }
     };
@@ -135,7 +160,13 @@ const Users = () => {
                         </p>
                     </div>
                 </div>
-                <button className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <button 
+                    onClick={() => {
+                        setSelectedUser(null);
+                        setShowUserModal(true);
+                    }}
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
                     <Plus className="w-4 h-4 mr-2" />
                     Add User
                 </button>

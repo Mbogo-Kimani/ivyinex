@@ -28,6 +28,8 @@ import { formatDate, formatCurrency, formatNumber } from '../utils/formatters';
 import VoucherDetails from '../components/Vouchers/VoucherDetails';
 import VoucherForm from '../components/Vouchers/VoucherForm';
 import BulkVoucherForm from '../components/Vouchers/BulkVoucherForm';
+import { useAuth } from '../hooks/useAuth';
+import toast from 'react-hot-toast';
 
 const Vouchers = () => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -41,9 +43,13 @@ const Vouchers = () => {
     const [showBulkForm, setShowBulkForm] = useState(false);
     const [selectedVoucher, setSelectedVoucher] = useState(null);
     const [formMode, setFormMode] = useState('create'); // 'create' or 'edit'
+    const [importing, setImporting] = useState(false);
 
-    // Fetch vouchers data
-    const { data: vouchersData, loading: vouchersLoading, refetch: refetchVouchers } = useData(apiMethods.getVouchers);
+    // Get authentication status
+    const { isAuthenticated } = useAuth();
+
+    // Fetch vouchers data only if authenticated
+    const { data: vouchersData, loading: vouchersLoading, refetch: refetchVouchers } = useData(apiMethods.getVouchers, [], { enabled: isAuthenticated });
 
     // Filter and search vouchers
     const filteredVouchers = vouchersData?.filter(voucher => {
@@ -116,25 +122,61 @@ const Vouchers = () => {
     const handleSaveVoucher = async (voucherData) => {
         try {
             if (formMode === 'create') {
-                await apiMethods.createVoucher(voucherData);
+                // Backend expects: packageKey (required), code (required for single), value (optional), type, active, expiresAt, notes, maxUses
+                if (!voucherData.packageKey) {
+                    toast.error('Package key is required');
+                    return;
+                }
+                if (!voucherData.code) {
+                    toast.error('Voucher code is required');
+                    return;
+                }
+                const backendData = {
+                    packageKey: voucherData.packageKey,
+                    code: voucherData.code,
+                    value: voucherData.value || undefined,
+                    type: voucherData.type || 'single',
+                    active: voucherData.active !== undefined ? voucherData.active : true,
+                    expiresAt: voucherData.expiresAt ? new Date(voucherData.expiresAt).toISOString() : undefined,
+                    maxUses: voucherData.maxUses || 1,
+                    notes: voucherData.notes || undefined,
+                };
+                // Remove undefined values
+                Object.keys(backendData).forEach(key => backendData[key] === undefined && delete backendData[key]);
+                await apiMethods.createVoucher(backendData);
+                toast.success('Voucher created successfully');
             } else {
                 await apiMethods.updateVoucher(selectedVoucher._id, voucherData);
+                toast.success('Voucher updated successfully');
             }
             refetchVouchers();
             setShowVoucherForm(false);
         } catch (error) {
             console.error('Error saving voucher:', error);
+            const errorMessage = error.response?.data?.error || error.message || 'Unknown error';
+            toast.error(`Failed to ${formMode === 'create' ? 'create' : 'update'} voucher: ${errorMessage}`);
         }
     };
 
     const handleBulkSave = async (bulkData) => {
         try {
-            // This would be implemented in the backend
-            await apiMethods.bulkCreateVouchers(bulkData);
+            // Use the existing createVoucher endpoint with count parameter
+            const { packageKey, count, value, type, active, expiresAt, maxUses } = bulkData;
+            await apiMethods.createVoucher({
+                packageKey,
+                count: count || 1,
+                value,
+                type: type || 'single',
+                active: active !== undefined ? active : true,
+                expiresAt,
+                maxUses: maxUses || 1
+            });
+            toast.success(`Successfully created ${count || 1} vouchers`);
             refetchVouchers();
             setShowBulkForm(false);
         } catch (error) {
             console.error('Error creating bulk vouchers:', error);
+            toast.error('Failed to create vouchers. Please try again.');
         }
     };
 
@@ -142,9 +184,11 @@ const Vouchers = () => {
         if (window.confirm('Are you sure you want to delete this voucher?')) {
             try {
                 await apiMethods.deleteVoucher(voucherId);
+                toast.success('Voucher deleted successfully');
                 refetchVouchers();
             } catch (error) {
                 console.error('Error deleting voucher:', error);
+                toast.error('Failed to delete voucher');
             }
         }
     };
@@ -160,10 +204,162 @@ const Vouchers = () => {
 
         try {
             await apiMethods.createVoucher(duplicateData);
+            toast.success('Voucher duplicated successfully');
             refetchVouchers();
         } catch (error) {
             console.error('Error duplicating voucher:', error);
+            toast.error('Failed to duplicate voucher');
         }
+    };
+
+    const handleExport = () => {
+        if (!vouchersData || vouchersData.length === 0) {
+            toast.error('No vouchers to export');
+            return;
+        }
+
+        // Convert vouchers to CSV format
+        const headers = ['code', 'packageKey', 'valueKES', 'durationSeconds', 'type', 'active', 'maxUses', 'usedCount', 'expiresAt'];
+        const csvRows = [
+            headers.join(','),
+            ...vouchersData.map(voucher => [
+                `"${voucher.code || ''}"`,
+                `"${voucher.packageKey || ''}"`,
+                voucher.valueKES || voucher.value || 0,
+                voucher.durationSeconds || 0,
+                `"${voucher.type || 'single'}"`,
+                voucher.active ? 'true' : 'false',
+                voucher.maxUses || voucher.uses || 1,
+                voucher.usedCount || 0,
+                voucher.expiresAt ? `"${new Date(voucher.expiresAt).toISOString()}"` : ''
+            ].join(','))
+        ];
+
+        const csvContent = csvRows.join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `vouchers_${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        toast.success('Vouchers exported successfully');
+    };
+
+    const handleImport = () => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.csv,.json';
+        input.onchange = async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            setImporting(true);
+            try {
+                const text = await file.text();
+                let vouchers = [];
+
+                if (file.name.endsWith('.csv')) {
+                    // Parse CSV with proper handling of quoted values
+                    const lines = text.split('\n').filter(line => line.trim());
+                    if (lines.length < 2) {
+                        toast.error('CSV file must have at least a header row and one data row');
+                        setImporting(false);
+                        return;
+                    }
+                    
+                    // Parse CSV line with proper quote handling
+                    const parseCSVLine = (line) => {
+                        const result = [];
+                        let current = '';
+                        let inQuotes = false;
+                        for (let i = 0; i < line.length; i++) {
+                            const char = line[i];
+                            if (char === '"') {
+                                inQuotes = !inQuotes;
+                            } else if (char === ',' && !inQuotes) {
+                                result.push(current.trim());
+                                current = '';
+                            } else {
+                                current += char;
+                            }
+                        }
+                        result.push(current.trim());
+                        return result;
+                    };
+                    
+                    const headers = parseCSVLine(lines[0]).map(h => h.replace(/^"|"$/g, ''));
+                    
+                    for (let i = 1; i < lines.length; i++) {
+                        const values = parseCSVLine(lines[i]).map(v => v.replace(/^"|"$/g, ''));
+                        const voucher = {};
+                        headers.forEach((header, index) => {
+                            voucher[header] = values[index] || '';
+                        });
+                        vouchers.push(voucher);
+                    }
+                } else if (file.name.endsWith('.json')) {
+                    // Parse JSON
+                    vouchers = JSON.parse(text);
+                    if (!Array.isArray(vouchers)) {
+                        vouchers = [vouchers];
+                    }
+                }
+
+                // Transform and validate vouchers
+                const validVouchers = vouchers.map(voucher => ({
+                    packageKey: voucher.packageKey?.trim(),
+                    code: voucher.code?.trim() || undefined,
+                    value: voucher.valueKES || voucher.value ? parseFloat(voucher.valueKES || voucher.value) : undefined,
+                    type: voucher.type || 'single',
+                    active: voucher.active !== undefined ? (voucher.active === 'true' || voucher.active === true) : true,
+                    expiresAt: voucher.expiresAt ? new Date(voucher.expiresAt).toISOString() : undefined,
+                    maxUses: parseInt(voucher.maxUses || voucher.uses) || 1,
+                    notes: voucher.notes || undefined,
+                })).filter(v => v.packageKey);
+
+                if (validVouchers.length === 0) {
+                    toast.error('No valid vouchers found in file');
+                    setImporting(false);
+                    return;
+                }
+
+                // Import vouchers one by one (backend doesn't have bulk import endpoint)
+                let successCount = 0;
+                let errorCount = 0;
+                for (const voucher of validVouchers) {
+                    try {
+                        // If code is provided, create single voucher, otherwise use count
+                        if (voucher.code) {
+                            await apiMethods.createVoucher(voucher);
+                        } else {
+                            // Generate code and create
+                            const code = Math.random().toString(36).slice(2, 10).toUpperCase();
+                            await apiMethods.createVoucher({ ...voucher, code });
+                        }
+                        successCount++;
+                    } catch (error) {
+                        console.error('Error importing voucher:', error);
+                        errorCount++;
+                    }
+                }
+
+                if (successCount > 0) {
+                    toast.success(`Successfully imported ${successCount} voucher(s)${errorCount > 0 ? `, ${errorCount} failed` : ''}`);
+                } else {
+                    toast.error(`Failed to import vouchers: ${errorCount} errors`);
+                }
+                refetchVouchers();
+            } catch (error) {
+                console.error('Import error:', error);
+                toast.error(`Failed to import vouchers: ${error.message}`);
+            } finally {
+                setImporting(false);
+            }
+        };
+        input.click();
     };
 
     const getStatusBadge = (voucher) => {
@@ -251,13 +447,21 @@ const Vouchers = () => {
                     </div>
                 </div>
                 <div className="flex space-x-2">
-                    <button className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    <button 
+                        onClick={handleExport}
+                        disabled={!vouchersData || vouchersData.length === 0}
+                        className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
                         <Download className="w-4 h-4 mr-2" />
                         Export
                     </button>
-                    <button className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    <button 
+                        onClick={handleImport}
+                        disabled={importing}
+                        className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
                         <Upload className="w-4 h-4 mr-2" />
-                        Import
+                        {importing ? 'Importing...' : 'Import'}
                     </button>
                     <button
                         onClick={handleBulkCreate}

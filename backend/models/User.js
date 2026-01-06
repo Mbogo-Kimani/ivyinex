@@ -13,6 +13,13 @@ const UserSchema = new mongoose.Schema({
   referralCode: { type: String, unique: true, sparse: true }, // unique referral code
   referredBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // who referred this user
   referralPoints: { type: Number, default: 0 }, // points earned from referrals
+  // Password reset fields
+  passwordResetToken: { type: String },
+  passwordResetExpires: { type: Date },
+  // Email preferences
+  emailMarketingOptIn: { type: Boolean, default: true }, // Opt-in for marketing emails
+  emailBlacklisted: { type: Boolean, default: false }, // User has unsubscribed
+  brevoContactId: { type: Number }, // Brevo contact ID for syncing
   createdAt: { type: Date, default: Date.now }
 });
 
@@ -53,6 +60,39 @@ UserSchema.methods.deductPoints = async function (amount) {
   this.points -= amount;
   await this.save();
   return this.points;
+};
+
+// helper to generate password reset token
+UserSchema.methods.generatePasswordResetToken = function () {
+  const crypto = require('crypto');
+  const resetToken = crypto.randomBytes(32).toString('hex');
+  
+  // Hash the token before saving
+  const bcrypt = require('bcryptjs');
+  this.passwordResetToken = bcrypt.hashSync(resetToken, 10);
+  this.passwordResetExpires = Date.now() + 30 * 60 * 1000; // 30 minutes
+  
+  return resetToken;
+};
+
+// helper to verify password reset token
+UserSchema.methods.verifyPasswordResetToken = async function (token) {
+  if (!this.passwordResetToken || !this.passwordResetExpires) {
+    return false;
+  }
+  
+  if (Date.now() > this.passwordResetExpires) {
+    return false;
+  }
+  
+  const bcrypt = require('bcryptjs');
+  return bcrypt.compareSync(token, this.passwordResetToken);
+};
+
+// helper to clear password reset token
+UserSchema.methods.clearPasswordResetToken = function () {
+  this.passwordResetToken = undefined;
+  this.passwordResetExpires = undefined;
 };
 
 module.exports = mongoose.model('User', UserSchema);

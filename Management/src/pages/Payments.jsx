@@ -25,6 +25,8 @@ import { useData } from '../hooks/useApi.jsx';
 import { apiMethods } from '../services/api';
 import { formatDate, formatCurrency, formatNumber } from '../utils/formatters';
 import PaymentDetails from '../components/Payments/PaymentDetails';
+import { useAuth } from '../hooks/useAuth';
+import toast from 'react-hot-toast';
 
 const Payments = () => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -36,8 +38,11 @@ const Payments = () => {
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [selectedPayment, setSelectedPayment] = useState(null);
 
-    // Fetch payments data
-    const { data: paymentsData, loading: paymentsLoading, refetch: refetchPayments } = useData(apiMethods.getPayments);
+    // Get authentication status
+    const { isAuthenticated } = useAuth();
+
+    // Fetch payments data only if authenticated
+    const { data: paymentsData, loading: paymentsLoading, refetch: refetchPayments } = useData(apiMethods.getPayments, [], { enabled: isAuthenticated });
 
     // Filter and search payments
     const filteredPayments = paymentsData?.filter(payment => {
@@ -47,7 +52,7 @@ const Payments = () => {
             payment._id?.toLowerCase().includes(searchTerm.toLowerCase());
 
         const matchesStatusFilter = filterStatus === 'all' ||
-            (filterStatus === 'successful' && payment.status === 'successful') ||
+            (filterStatus === 'successful' && payment.status === 'success') ||
             (filterStatus === 'pending' && payment.status === 'pending') ||
             (filterStatus === 'failed' && payment.status === 'failed');
 
@@ -92,7 +97,7 @@ const Payments = () => {
 
     const getStatusBadge = (payment) => {
         switch (payment.status) {
-            case 'successful':
+            case 'success':
                 return (
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                         <CheckCircle className="w-3 h-3 mr-1" />
@@ -111,6 +116,13 @@ const Payments = () => {
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
                         <XCircle className="w-3 h-3 mr-1" />
                         Failed
+                    </span>
+                );
+            case 'cancelled':
+                return (
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                        <XCircle className="w-3 h-3 mr-1" />
+                        Cancelled
                     </span>
                 );
             default:
@@ -152,14 +164,88 @@ const Payments = () => {
     };
 
     // Calculate statistics
-    const totalRevenue = paymentsData?.reduce((sum, payment) => sum + (payment.amountKES || 0), 0) || 0;
-    const successfulPayments = paymentsData?.filter(p => p.status === 'successful').length || 0;
+    const totalRevenue = paymentsData?.filter(p => p.status === 'success').reduce((sum, payment) => sum + (payment.amountKES || 0), 0) || 0;
+    const successfulPayments = paymentsData?.filter(p => p.status === 'success').length || 0;
     const pendingPayments = paymentsData?.filter(p => p.status === 'pending').length || 0;
     const failedPayments = paymentsData?.filter(p => p.status === 'failed').length || 0;
     const successRate = paymentsData?.length > 0 ? (successfulPayments / paymentsData.length) * 100 : 0;
 
     // Get unique providers for filter
     const uniqueProviders = [...new Set(paymentsData?.map(p => p.provider).filter(Boolean))] || [];
+
+    const handleExport = () => {
+        if (!paymentsData || paymentsData.length === 0) {
+            toast.error('No payments to export');
+            return;
+        }
+
+        // Convert payments to CSV format
+        const headers = [
+            'id',
+            'transactionId',
+            'provider',
+            'phone',
+            'amountKES',
+            'status',
+            'packageKey',
+            'mac',
+            'ip',
+            'errorMessage',
+            'errorCode',
+            'createdAt',
+            'updatedAt'
+        ];
+        
+        const csvRows = [
+            headers.join(','),
+            ...paymentsData.map(payment => {
+                // Extract transaction ID from providerPayload if available
+                const transactionId = payment.transactionId || 
+                    payment.providerPayload?.Body?.stkCallback?.CheckoutRequestID ||
+                    payment.providerPayload?.CheckoutRequestID ||
+                    payment.providerPayload?.MerchantRequestID ||
+                    '';
+                
+                // Extract error message and code
+                const errorMessage = payment.providerPayload?.errorMessage ||
+                    payment.providerPayload?.Body?.stkCallback?.ResultDesc ||
+                    payment.providerPayload?.ResultDesc ||
+                    '';
+                const errorCode = payment.providerPayload?.errorCode ||
+                    payment.providerPayload?.Body?.stkCallback?.ResultCode ||
+                    payment.providerPayload?.ResultCode ||
+                    '';
+
+                return [
+                    `"${payment._id || ''}"`,
+                    `"${transactionId}"`,
+                    `"${payment.provider || ''}"`,
+                    `"${payment.phone || ''}"`,
+                    payment.amountKES || 0,
+                    `"${payment.status || ''}"`,
+                    `"${payment.packageKey || ''}"`,
+                    `"${payment.mac || ''}"`,
+                    `"${payment.ip || ''}"`,
+                    `"${errorMessage}"`,
+                    `"${errorCode}"`,
+                    payment.createdAt ? `"${new Date(payment.createdAt).toISOString()}"` : '',
+                    payment.updatedAt ? `"${new Date(payment.updatedAt).toISOString()}"` : ''
+                ].join(',');
+            })
+        ];
+
+        const csvContent = csvRows.join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `payments_${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        toast.success('Payments exported successfully');
+    };
 
     return (
         <div className="space-y-6">
@@ -175,15 +261,26 @@ const Payments = () => {
                     </div>
                 </div>
                 <div className="flex space-x-2">
-                    <button className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    <button 
+                        onClick={handleExport}
+                        disabled={!paymentsData || paymentsData.length === 0}
+                        className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
                         <Download className="w-4 h-4 mr-2" />
                         Export
                     </button>
-                    <button className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    <button 
+                        disabled
+                        title="Import functionality will be enabled later"
+                        className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-400 bg-gray-100 cursor-not-allowed opacity-50"
+                    >
                         <Upload className="w-4 h-4 mr-2" />
                         Import
                     </button>
-                    <button className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    <button 
+                        onClick={() => refetchPayments()}
+                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    >
                         <RefreshCw className="w-4 h-4 mr-2" />
                         Refresh
                     </button>
@@ -298,6 +395,7 @@ const Payments = () => {
                         <option value="successful">Successful</option>
                         <option value="pending">Pending</option>
                         <option value="failed">Failed</option>
+                        <option value="cancelled">Cancelled</option>
                     </select>
 
                     {/* Provider Filter */}

@@ -176,6 +176,12 @@ export default function Login() {
                     </button>
 
                     <div style={{ textAlign: 'center', marginBottom: 16 }}>
+                        <Link href="/auth/forgot-password" className="btn ghost" style={{ padding: '8px 12px', fontSize: 14 }}>
+                            Forgot Password?
+                        </Link>
+                    </div>
+
+                    <div style={{ textAlign: 'center', marginBottom: 16 }}>
                         <span className="kv">Don't have an account? </span>
                         <Link href="/auth/register" className="btn ghost" style={{ padding: '8px 12px' }}>
                             Create Account

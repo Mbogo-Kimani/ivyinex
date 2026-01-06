@@ -197,6 +197,27 @@ code {
     }
 }
 
+/* Edge compatibility fixes */
+@supports (-ms-ime-align: auto) {
+    /* Edge-specific styles */
+    body {
+        -ms-overflow-style: -ms-autohiding-scrollbar;
+    }
+}
+
+/* Ensure flexbox works in Edge */
+.flex {
+    display: -ms-flexbox;
+    display: flex;
+}
+
+/* Grid fallback for older Edge */
+@supports not (display: grid) {
+    .grid {
+        display: -ms-grid;
+    }
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
     .container {

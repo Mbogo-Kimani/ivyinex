@@ -22,14 +22,16 @@ import {
 import { formatDate, formatNumber } from '../../utils/formatters';
 
 const DeviceDetails = ({ device, onClose, onSave }) => {
-    const [isEditing, setIsEditing] = useState(false);
+    const isNewDevice = !device || !device.mac;
+    const [isEditing, setIsEditing] = useState(isNewDevice);
     const [editedDevice, setEditedDevice] = useState({
-        mac: device.mac || '',
-        ip: device.ip || '',
-        userAgent: device.userAgent || '',
-        lastSeen: device.lastSeen || '',
-        isBlocked: device.isBlocked || false,
-        notes: device.notes || '',
+        mac: device?.mac || '',
+        ip: device?.ip || '',
+        name: device?.name || '',
+        userAgent: device?.userAgent || '',
+        lastSeen: device?.lastSeen || '',
+        isBlocked: device?.isBlocked || false,
+        notes: device?.notes || '',
     });
 
     const handleSave = () => {
@@ -39,14 +41,19 @@ const DeviceDetails = ({ device, onClose, onSave }) => {
 
     const handleCancel = () => {
         setEditedDevice({
-            mac: device.mac || '',
-            ip: device.ip || '',
-            userAgent: device.userAgent || '',
-            lastSeen: device.lastSeen || '',
-            isBlocked: device.isBlocked || false,
-            notes: device.notes || '',
+            mac: device?.mac || '',
+            ip: device?.ip || '',
+            name: device?.name || '',
+            userAgent: device?.userAgent || '',
+            lastSeen: device?.lastSeen || '',
+            isBlocked: device?.isBlocked || false,
+            notes: device?.notes || '',
         });
-        setIsEditing(false);
+        if (isNewDevice) {
+            onClose();
+        } else {
+            setIsEditing(false);
+        }
     };
 
     const handleChange = (field, value) => {
@@ -138,13 +145,13 @@ const DeviceDetails = ({ device, onClose, onSave }) => {
                     <div className="flex items-center justify-between mb-6">
                         <div className="flex items-center">
                             <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center mr-4">
-                                {getDeviceIcon(device.userAgent)}
+                                {getDeviceIcon(device?.userAgent)}
                             </div>
                             <div>
                                 <h3 className="text-lg font-medium text-gray-900">
-                                    {device.mac || 'Unknown Device'}
+                                    {isNewDevice ? 'Create New Device' : (device?.mac || 'Unknown Device')}
                                 </h3>
-                                <p className="text-sm text-gray-500">{getDeviceType(device.userAgent)}</p>
+                                <p className="text-sm text-gray-500">{isNewDevice ? 'Add a new device' : getDeviceType(device?.userAgent)}</p>
                             </div>
                         </div>
                         <div className="flex items-center space-x-2">
@@ -203,7 +210,7 @@ const DeviceDetails = ({ device, onClose, onSave }) => {
                                         className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono"
                                     />
                                 ) : (
-                                    <p className="text-sm text-gray-900 mt-1 font-mono">{device.mac || 'Unknown'}</p>
+                                    <p className="text-sm text-gray-900 mt-1 font-mono">{device?.mac || 'Unknown'}</p>
                                 )}
                             </div>
 
@@ -217,19 +224,19 @@ const DeviceDetails = ({ device, onClose, onSave }) => {
                                         className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                     />
                                 ) : (
-                                    <p className="text-sm text-gray-900 mt-1">{device.ip || 'No IP'}</p>
+                                    <p className="text-sm text-gray-900 mt-1">{device?.ip || 'No IP'}</p>
                                 )}
                             </div>
 
                             <div>
                                 <label className="text-sm font-medium text-gray-500">Device Type</label>
-                                <p className="text-sm text-gray-900 mt-1">{getDeviceType(device.userAgent)}</p>
+                                <p className="text-sm text-gray-900 mt-1">{getDeviceType(device?.userAgent)}</p>
                             </div>
 
                             <div>
                                 <label className="text-sm font-medium text-gray-500">Status</label>
                                 <div className="mt-1">
-                                    {getStatusBadge(device)}
+                                    {device ? getStatusBadge(device) : null}
                                 </div>
                             </div>
                         </div>
@@ -242,12 +249,12 @@ const DeviceDetails = ({ device, onClose, onSave }) => {
 
                             <div>
                                 <label className="text-sm font-medium text-gray-500">Last Seen</label>
-                                <p className="text-sm text-gray-900 mt-1">{getLastSeenText(device.lastSeen)}</p>
+                                <p className="text-sm text-gray-900 mt-1">{getLastSeenText(device?.lastSeen)}</p>
                             </div>
 
                             <div>
                                 <label className="text-sm font-medium text-gray-500">Created</label>
-                                <p className="text-sm text-gray-900 mt-1">{formatDate(device.createdAt)}</p>
+                                <p className="text-sm text-gray-900 mt-1">{device?.createdAt ? formatDate(device.createdAt) : 'Not set'}</p>
                             </div>
 
                             <div>
@@ -262,7 +269,7 @@ const DeviceDetails = ({ device, onClose, onSave }) => {
                                         <option value={true}>Yes</option>
                                     </select>
                                 ) : (
-                                    <p className="text-sm text-gray-900 mt-1">{device.isBlocked ? 'Yes' : 'No'}</p>
+                                    <p className="text-sm text-gray-900 mt-1">{device?.isBlocked ? 'Yes' : 'No'}</p>
                                 )}
                             </div>
 
@@ -276,7 +283,7 @@ const DeviceDetails = ({ device, onClose, onSave }) => {
                                         className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                     />
                                 ) : (
-                                    <p className="text-sm text-gray-900 mt-1">{device.notes || 'No notes'}</p>
+                                    <p className="text-sm text-gray-900 mt-1">{device?.notes || 'No notes'}</p>
                                 )}
                             </div>
                         </div>
@@ -288,7 +295,7 @@ const DeviceDetails = ({ device, onClose, onSave }) => {
                             User Agent
                         </h4>
                         <div className="bg-gray-50 p-3 rounded-md">
-                            <p className="text-sm text-gray-900 break-all">{device.userAgent || 'Unknown'}</p>
+                            <p className="text-sm text-gray-900 break-all">{device?.userAgent || 'Unknown'}</p>
                         </div>
                     </div>
 

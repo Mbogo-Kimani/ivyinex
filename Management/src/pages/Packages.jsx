@@ -26,6 +26,8 @@ import { apiMethods } from '../services/api';
 import { formatDate, formatCurrency, formatNumber } from '../utils/formatters';
 import PackageDetails from '../components/Packages/PackageDetails';
 import PackageForm from '../components/Packages/PackageForm';
+import { useAuth } from '../hooks/useAuth';
+import toast from 'react-hot-toast';
 
 const Packages = () => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -38,9 +40,13 @@ const Packages = () => {
     const [showPackageForm, setShowPackageForm] = useState(false);
     const [selectedPackage, setSelectedPackage] = useState(null);
     const [formMode, setFormMode] = useState('create'); // 'create' or 'edit'
+    const [importing, setImporting] = useState(false);
 
-    // Fetch packages data
-    const { data: packagesData, loading: packagesLoading, refetch: refetchPackages } = useData(apiMethods.getPackages);
+    // Get authentication status
+    const { isAuthenticated } = useAuth();
+
+    // Fetch packages data only if authenticated
+    const { data: packagesData, loading: packagesLoading, refetch: refetchPackages } = useData(apiMethods.getPackages, [], { enabled: isAuthenticated });
 
     // Filter and search packages
     const filteredPackages = packagesData?.filter(pkg => {
@@ -110,13 +116,16 @@ const Packages = () => {
         try {
             if (formMode === 'create') {
                 await apiMethods.createPackage(packageData);
+                toast.success('Package created successfully');
             } else {
                 await apiMethods.updatePackage(selectedPackage._id, packageData);
+                toast.success('Package updated successfully');
             }
             refetchPackages();
             setShowPackageForm(false);
         } catch (error) {
             console.error('Error saving package:', error);
+            toast.error(`Failed to ${formMode === 'create' ? 'create' : 'update'} package`);
         }
     };
 
@@ -124,9 +133,11 @@ const Packages = () => {
         if (window.confirm('Are you sure you want to delete this package?')) {
             try {
                 await apiMethods.deletePackage(packageId);
+                toast.success('Package deleted successfully');
                 refetchPackages();
             } catch (error) {
                 console.error('Error deleting package:', error);
+                toast.error('Failed to delete package');
             }
         }
     };
@@ -143,10 +154,135 @@ const Packages = () => {
 
         try {
             await apiMethods.createPackage(duplicateData);
+            toast.success('Package duplicated successfully');
             refetchPackages();
         } catch (error) {
             console.error('Error duplicating package:', error);
+            toast.error('Failed to duplicate package');
         }
+    };
+
+    const handleExport = () => {
+        if (!packagesData || packagesData.length === 0) {
+            toast.error('No packages to export');
+            return;
+        }
+
+        // Convert packages to CSV format
+        const headers = ['key', 'name', 'priceKES', 'durationSeconds', 'speedKbps', 'devicesAllowed'];
+        const csvRows = [
+            headers.join(','),
+            ...packagesData.map(pkg => [
+                `"${pkg.key || ''}"`,
+                `"${pkg.name || ''}"`,
+                pkg.priceKES || 0,
+                pkg.durationSeconds || 0,
+                pkg.speedKbps || 0,
+                pkg.devicesAllowed || 1
+            ].join(','))
+        ];
+
+        const csvContent = csvRows.join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `packages_${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        toast.success('Packages exported successfully');
+    };
+
+    const handleImport = () => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.csv,.json';
+        input.onchange = async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            setImporting(true);
+            try {
+                const text = await file.text();
+                let packages = [];
+
+                if (file.name.endsWith('.csv')) {
+                    // Parse CSV with proper handling of quoted values
+                    const lines = text.split('\n').filter(line => line.trim());
+                    if (lines.length < 2) {
+                        toast.error('CSV file must have at least a header row and one data row');
+                        setImporting(false);
+                        return;
+                    }
+                    
+                    // Parse header row
+                    const parseCSVLine = (line) => {
+                        const result = [];
+                        let current = '';
+                        let inQuotes = false;
+                        for (let i = 0; i < line.length; i++) {
+                            const char = line[i];
+                            if (char === '"') {
+                                inQuotes = !inQuotes;
+                            } else if (char === ',' && !inQuotes) {
+                                result.push(current.trim());
+                                current = '';
+                            } else {
+                                current += char;
+                            }
+                        }
+                        result.push(current.trim());
+                        return result;
+                    };
+                    
+                    const headers = parseCSVLine(lines[0]).map(h => h.replace(/^"|"$/g, ''));
+                    
+                    for (let i = 1; i < lines.length; i++) {
+                        const values = parseCSVLine(lines[i]).map(v => v.replace(/^"|"$/g, ''));
+                        const pkg = {};
+                        headers.forEach((header, index) => {
+                            pkg[header] = values[index] || '';
+                        });
+                        packages.push(pkg);
+                    }
+                } else if (file.name.endsWith('.json')) {
+                    // Parse JSON
+                    packages = JSON.parse(text);
+                    if (!Array.isArray(packages)) {
+                        packages = [packages];
+                    }
+                }
+
+                // Transform and validate packages
+                const validPackages = packages.map(pkg => ({
+                    key: pkg.key?.trim(),
+                    name: pkg.name?.trim(),
+                    priceKES: parseFloat(pkg.priceKES) || 0,
+                    durationSeconds: parseInt(pkg.durationSeconds) || 3600,
+                    speedKbps: parseInt(pkg.speedKbps) || 1000,
+                    devicesAllowed: parseInt(pkg.devicesAllowed) || 1,
+                })).filter(pkg => pkg.key && pkg.name);
+
+                if (validPackages.length === 0) {
+                    toast.error('No valid packages found in file');
+                    setImporting(false);
+                    return;
+                }
+
+                // Use bulk create endpoint
+                await apiMethods.bulkCreatePackages({ packages: validPackages });
+                toast.success(`Successfully imported ${validPackages.length} package(s)`);
+                refetchPackages();
+            } catch (error) {
+                console.error('Import error:', error);
+                toast.error(`Failed to import packages: ${error.message}`);
+            } finally {
+                setImporting(false);
+            }
+        };
+        input.click();
     };
 
     const getStatusBadge = (pkg) => {
@@ -207,13 +343,21 @@ const Packages = () => {
                     </div>
                 </div>
                 <div className="flex space-x-2">
-                    <button className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    <button 
+                        onClick={handleExport}
+                        disabled={!packagesData || packagesData.length === 0}
+                        className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
                         <Download className="w-4 h-4 mr-2" />
                         Export
                     </button>
-                    <button className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    <button 
+                        onClick={handleImport}
+                        disabled={importing}
+                        className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
                         <Upload className="w-4 h-4 mr-2" />
-                        Import
+                        {importing ? 'Importing...' : 'Import'}
                     </button>
                     <button
                         onClick={handleCreatePackage}

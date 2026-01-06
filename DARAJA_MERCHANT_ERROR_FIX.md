@@ -254,3 +254,4 @@ Once you've updated the credentials:
 **Status:** Error handling improved, but credentials need to be fixed in environment variables  
 **Action Required:** Update `DARAJA_SHORTCODE` and `DARAJA_PASSKEY` in Render environment variables
 
+

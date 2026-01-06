@@ -12,18 +12,21 @@ import {
     CheckCircle,
     Info
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const PackageForm = ({ package: pkg, mode, onClose, onSave }) => {
     const [formData, setFormData] = useState({
         name: '',
         key: '',
         description: '',
-        type: 'data',
+        type: 'time',
         priceKES: 0,
         active: true,
         dataLimit: 0,
-        duration: 0,
-        speedLimit: 0,
+        duration: 0, // in hours for time-based packages
+        durationSeconds: 0, // in seconds (calculated)
+        speedKbps: 0,
+        devicesAllowed: 1,
         features: [],
         restrictions: [],
         priority: 1,
@@ -38,12 +41,14 @@ const PackageForm = ({ package: pkg, mode, onClose, onSave }) => {
                 name: pkg.name || '',
                 key: pkg.key || '',
                 description: pkg.description || '',
-                type: pkg.type || 'data',
+                type: pkg.type || 'time',
                 priceKES: pkg.priceKES || 0,
                 active: pkg.active !== undefined ? pkg.active : true,
                 dataLimit: pkg.dataLimit || 0,
-                duration: pkg.duration || 0,
-                speedLimit: pkg.speedLimit || 0,
+                duration: pkg.durationSeconds ? Math.floor(pkg.durationSeconds / 3600) : 0, // Convert seconds to hours
+                durationSeconds: pkg.durationSeconds || 0,
+                speedKbps: pkg.speedKbps || 0,
+                devicesAllowed: pkg.devicesAllowed || 1,
                 features: pkg.features || [],
                 restrictions: pkg.restrictions || [],
                 priority: pkg.priority || 1,
@@ -113,8 +118,12 @@ const PackageForm = ({ package: pkg, mode, onClose, onSave }) => {
             newErrors.duration = 'Duration must be greater than 0';
         }
 
-        if (formData.speedLimit < 0) {
+        if (formData.speedLimit < 0 && formData.speedKbps < 0) {
             newErrors.speedLimit = 'Speed limit must be positive';
+        }
+
+        if (!formData.duration && !formData.durationSeconds) {
+            newErrors.duration = 'Duration is required';
         }
 
         setErrors(newErrors);
@@ -128,9 +137,47 @@ const PackageForm = ({ package: pkg, mode, onClose, onSave }) => {
 
         setLoading(true);
         try {
-            await onSave(formData);
+            // Transform form data to match backend API requirements
+            // Backend expects: key, name, priceKES, durationSeconds, speedKbps, devicesAllowed
+            const durationHours = parseFloat(formData.duration) || 0;
+            const durationSeconds = durationHours > 0 ? durationHours * 3600 : (parseInt(formData.durationSeconds) || 3600);
+            const speedKbps = parseInt(formData.speedKbps) || parseInt(formData.speedLimit) || 1000;
+            
+            const packageData = {
+                key: formData.key.trim(),
+                name: formData.name.trim(),
+                priceKES: parseFloat(formData.priceKES) || 0,
+                durationSeconds: durationSeconds,
+                speedKbps: speedKbps,
+                devicesAllowed: parseInt(formData.devicesAllowed) || 1,
+            };
+            
+            // Validate required fields
+            if (!packageData.key || !packageData.name) {
+                toast.error('Package key and name are required');
+                setLoading(false);
+                return;
+            }
+            if (packageData.priceKES <= 0) {
+                toast.error('Price must be greater than 0');
+                setLoading(false);
+                return;
+            }
+            if (packageData.durationSeconds <= 0) {
+                toast.error('Duration must be greater than 0');
+                setLoading(false);
+                return;
+            }
+            if (packageData.speedKbps <= 0) {
+                toast.error('Speed must be greater than 0');
+                setLoading(false);
+                return;
+            }
+            
+            await onSave(packageData);
         } catch (error) {
             console.error('Error saving package:', error);
+            toast.error('Failed to save package');
         } finally {
             setLoading(false);
         }
@@ -346,25 +393,48 @@ const PackageForm = ({ package: pkg, mode, onClose, onSave }) => {
 
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700">
-                                            Speed Limit (Mbps)
+                                            Speed Limit (Kbps) *
                                         </label>
                                         <input
                                             type="number"
-                                            name="speedLimit"
-                                            value={formData.speedLimit}
-                                            onChange={handleInputChange}
+                                            name="speedKbps"
+                                            value={formData.speedKbps || formData.speedLimit}
+                                            onChange={(e) => {
+                                                const value = parseInt(e.target.value) || 0;
+                                                setFormData(prev => ({
+                                                    ...prev,
+                                                    speedKbps: value,
+                                                    speedLimit: value
+                                                }));
+                                            }}
                                             min="0"
-                                            step="0.1"
+                                            required
                                             className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${errors.speedLimit ? 'border-red-300' : 'border-gray-300'
                                                 }`}
-                                            placeholder="0 (unlimited)"
+                                            placeholder="1000"
                                         />
                                         {errors.speedLimit && (
                                             <p className="mt-1 text-sm text-red-600">{errors.speedLimit}</p>
                                         )}
                                         <p className="mt-1 text-sm text-gray-500">
-                                            Leave as 0 for unlimited speed
+                                            Enter speed in Kbps (e.g., 1000 for 1 Mbps)
                                         </p>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Devices Allowed *
+                                        </label>
+                                        <input
+                                            type="number"
+                                            name="devicesAllowed"
+                                            value={formData.devicesAllowed}
+                                            onChange={handleInputChange}
+                                            min="1"
+                                            required
+                                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                            placeholder="1"
+                                        />
                                     </div>
                                 </div>
                             </div>

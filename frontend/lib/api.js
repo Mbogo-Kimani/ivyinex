@@ -232,6 +232,30 @@ export async function changePassword(passwordData) {
     return data;
 }
 
+// Forgot password - request password reset
+export async function forgotPassword(emailOrPhone) {
+    const res = await fetch(`${BACKEND}/api/auth/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(emailOrPhone)
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to send password reset email');
+    return data;
+}
+
+// Reset password - set new password with token
+export async function resetPassword(token, newPassword) {
+    const res = await fetch(`${BACKEND}/api/auth/reset-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, newPassword })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to reset password');
+    return data;
+}
+
 // Subscription APIs
 export async function getSubscriptions() {
     const res = await fetch(`/api/subscriptions`, {

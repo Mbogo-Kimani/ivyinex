@@ -23,28 +23,45 @@ import {
 import { formatDate, formatCurrency, formatNumber } from '../../utils/formatters';
 
 const SubscriptionDetails = ({ subscription, onClose, onSave }) => {
-    const [isEditing, setIsEditing] = useState(false);
+    const isNewSubscription = !subscription || !subscription._id;
+    const [isEditing, setIsEditing] = useState(isNewSubscription);
     const [formData, setFormData] = useState({
-        active: subscription.active || false,
-        suspended: subscription.suspended || false,
-        startAt: subscription.startAt || '',
-        endAt: subscription.endAt || '',
-        packageKey: subscription.packageKey || '',
-        notes: subscription.notes || '',
+        userId: subscription?.userId || '',
+        packageKey: subscription?.packageKey || '',
+        active: subscription?.active || false,
+        suspended: subscription?.suspended || false,
+        startAt: subscription?.startAt ? new Date(subscription.startAt).toISOString().slice(0, 16) : '',
+        endAt: subscription?.endAt ? new Date(subscription.endAt).toISOString().slice(0, 16) : '',
+        notes: subscription?.notes || '',
     });
 
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        setFormData({
-            active: subscription.active || false,
-            suspended: subscription.suspended || false,
-            startAt: subscription.startAt || '',
-            endAt: subscription.endAt || '',
-            packageKey: subscription.packageKey || '',
-            notes: subscription.notes || '',
-        });
-    }, [subscription]);
+        if (subscription && subscription._id) {
+            setFormData({
+                userId: subscription.userId || '',
+                packageKey: subscription.packageKey || '',
+                active: subscription.active || false,
+                suspended: subscription.suspended || false,
+                startAt: subscription.startAt ? new Date(subscription.startAt).toISOString().slice(0, 16) : '',
+                endAt: subscription.endAt ? new Date(subscription.endAt).toISOString().slice(0, 16) : '',
+                notes: subscription.notes || '',
+            });
+        } else if (isNewSubscription) {
+            // Initialize with default values for new subscription
+            const now = new Date();
+            setFormData({
+                userId: '',
+                packageKey: '',
+                active: true,
+                suspended: false,
+                startAt: now.toISOString().slice(0, 16),
+                endAt: '',
+                notes: '',
+            });
+        }
+    }, [subscription, isNewSubscription]);
 
     const handleInputChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -67,18 +84,24 @@ const SubscriptionDetails = ({ subscription, onClose, onSave }) => {
     };
 
     const handleCancel = () => {
-        setFormData({
-            active: subscription.active || false,
-            suspended: subscription.suspended || false,
-            startAt: subscription.startAt || '',
-            endAt: subscription.endAt || '',
-            packageKey: subscription.packageKey || '',
-            notes: subscription.notes || '',
-        });
-        setIsEditing(false);
+        if (subscription && subscription._id) {
+            setFormData({
+                userId: subscription.userId || '',
+                packageKey: subscription.packageKey || '',
+                active: subscription.active || false,
+                suspended: subscription.suspended || false,
+                startAt: subscription.startAt ? new Date(subscription.startAt).toISOString().slice(0, 16) : '',
+                endAt: subscription.endAt ? new Date(subscription.endAt).toISOString().slice(0, 16) : '',
+                notes: subscription.notes || '',
+            });
+            setIsEditing(false);
+        } else {
+            onClose();
+        }
     };
 
     const getStatusBadge = () => {
+        if (!subscription) return null;
         if (subscription.suspended) {
             return (
                 <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
@@ -104,7 +127,7 @@ const SubscriptionDetails = ({ subscription, onClose, onSave }) => {
     };
 
     const getTimeRemaining = () => {
-        if (!subscription.endAt) return 'Unknown';
+        if (!subscription || !subscription.endAt) return 'Unknown';
 
         const now = new Date();
         const endDate = new Date(subscription.endAt);
@@ -121,7 +144,7 @@ const SubscriptionDetails = ({ subscription, onClose, onSave }) => {
     };
 
     const getDuration = () => {
-        if (!subscription.startAt || !subscription.endAt) return 'Unknown';
+        if (!subscription || !subscription.startAt || !subscription.endAt) return 'Unknown';
 
         const startDate = new Date(subscription.startAt);
         const endDate = new Date(subscription.endAt);
@@ -144,10 +167,10 @@ const SubscriptionDetails = ({ subscription, onClose, onSave }) => {
                         <Package className="h-8 w-8 text-blue-600 mr-3" />
                         <div>
                             <h3 className="text-lg font-medium text-gray-900">
-                                Subscription Details
+                                {isNewSubscription ? 'Create New Subscription' : 'Subscription Details'}
                             </h3>
                             <p className="text-sm text-gray-500">
-                                ID: {subscription._id}
+                                {isNewSubscription ? 'Add a new subscription' : `ID: ${subscription._id}`}
                             </p>
                         </div>
                     </div>
@@ -216,7 +239,7 @@ const SubscriptionDetails = ({ subscription, onClose, onSave }) => {
                                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                                 />
                                             ) : (
-                                                subscription.packageKey || 'Unknown Package'
+                                                subscription?.packageKey || 'Unknown Package'
                                             )}
                                         </div>
                                         <div className="text-sm text-gray-500">Package Key</div>
@@ -251,7 +274,7 @@ const SubscriptionDetails = ({ subscription, onClose, onSave }) => {
                                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                                 />
                                             ) : (
-                                                formatDate(subscription.startAt)
+                                                subscription?.startAt ? formatDate(subscription.startAt) : 'Not set'
                                             )}
                                         </div>
                                         <div className="text-sm text-gray-500">Start Date</div>
@@ -270,7 +293,7 @@ const SubscriptionDetails = ({ subscription, onClose, onSave }) => {
                                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                                 />
                                             ) : (
-                                                formatDate(subscription.endAt)
+                                                subscription?.endAt ? formatDate(subscription.endAt) : 'Not set'
                                             )}
                                         </div>
                                         <div className="text-sm text-gray-500">End Date</div>

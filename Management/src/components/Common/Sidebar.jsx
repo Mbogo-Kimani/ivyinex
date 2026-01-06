@@ -112,12 +112,13 @@ const Sidebar = ({ isOpen, onClose }) => {
 
             {/* Sidebar */}
             <div className={`
-        fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0
+        fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out 
+        lg:translate-x-0 lg:fixed lg:inset-y-0 lg:left-0 lg:shadow-none
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
-                <div className="flex h-full flex-col">
+                <div className="flex h-screen flex-col">
                     {/* Logo */}
-                    <div className="flex h-16 items-center justify-between px-4 border-b border-gray-200">
+                    <div className="flex h-16 flex-shrink-0 items-center justify-between px-4 border-b border-gray-200">
                         <div className="flex items-center">
                             <div className="flex-shrink-0">
                                 <div className="h-8 w-8 bg-blue-600 rounded-lg flex items-center justify-center">
@@ -138,7 +139,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                     </div>
 
                     {/* Navigation */}
-                    <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
+                    <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto min-h-0">
                         {filteredNavigation.map((item) => {
                             const Icon = item.icon;
                             return (
@@ -167,7 +168,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                     </nav>
 
                     {/* Footer */}
-                    <div className="border-t border-gray-200 p-4">
+                    <div className="flex-shrink-0 border-t border-gray-200 p-4">
                         <div className="text-xs text-gray-500 text-center">
                             Eco Wifi Management v1.0.0
                         </div>

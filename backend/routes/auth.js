@@ -6,6 +6,7 @@ const logger = require('../utils/logger');
 const LogModel = require('../models/Log');
 const otp = require('../lib/otp');
 const jwt = require('jsonwebtoken');
+const emailService = require('../lib/emailService');
 
 // Normalize phone input to E.164 without plus for KE (e.g. 2547XXXXXXXX)
 function normalizePhoneInput(phone) {
@@ -28,9 +29,45 @@ router.post('/register', async (req, res) => {
     let user = await User.findOne({ phone: normalizedPhone });
     if (user) return res.status(400).json({ error: 'phone already registered' });
 
-    user = new User({ name, phone: normalizedPhone, email });
+    user = new User({ name, phone: normalizedPhone, email: email?.toLowerCase().trim() });
     await user.setPassword(password);
     await user.save();
+
+    // Add user to Brevo contact list if email provided and marketing opt-in
+    if (user.email && user.emailMarketingOptIn) {
+        const brevoListId = process.env.BREVO_LIST_ID ? parseInt(process.env.BREVO_LIST_ID) : null;
+        emailService.addContactToBrevo(
+            user.email,
+            {
+                FIRSTNAME: user.name || '',
+                PHONE: user.phone || '',
+                SMS: user.phone || '',
+            },
+            brevoListId ? [brevoListId] : [],
+            false
+        ).then(result => {
+            if (result.success && result.id) {
+                user.brevoContactId = result.id;
+                user.save().catch(err => logger.error('Failed to save Brevo contact ID', { error: err.message }));
+            }
+        }).catch(err => {
+            logger.error('Failed to add user to Brevo', { error: err.message, userId: user._id });
+        });
+    }
+
+    // Send welcome email if email provided
+    if (user.email) {
+        const emailTemplates = require('../lib/emailTemplates');
+        const config = emailService.getEmailConfig();
+        const loginLink = `${config.frontendUrl}/login`;
+        
+        emailService.sendEmailAsync({
+            to: user.email,
+            toName: user.name || user.email,
+            subject: 'Welcome to Wifi Mtaani! 🎉',
+            htmlContent: emailTemplates.getWelcomeTemplate(user.name || 'User', loginLink),
+        });
+    }
 
     // If MAC address provided, link existing device to this user
     if (mac) {
@@ -152,9 +189,181 @@ router.post('/change-password', async (req, res) => {
         await user.setPassword(newPassword);
         await user.save();
 
+        // Send password changed confirmation email (async)
+        if (user.email) {
+            const emailTemplates = require('../lib/emailTemplates');
+            
+            emailService.sendEmailAsync({
+                to: user.email,
+                toName: user.name || user.email,
+                subject: 'Password Changed Successfully - Wifi Mtaani',
+                htmlContent: emailTemplates.getPasswordChangedTemplate(user.name || 'User'),
+            });
+        }
+
         res.json({ ok: true, message: 'Password changed successfully' });
     } catch (error) {
         res.status(500).json({ error: 'Failed to change password' });
+    }
+});
+
+// Forgot password - send reset email
+const { passwordResetLimiter } = require('../middleware/rateLimiter');
+router.post('/forgot-password', passwordResetLimiter, async (req, res) => {
+    try {
+        const { email, phone } = req.body;
+        
+        // Allow reset by email or phone
+        let user;
+        if (email) {
+            user = await User.findOne({ email: email.toLowerCase().trim() });
+        } else if (phone) {
+            const normalizedPhone = normalizePhoneInput(phone);
+            user = await User.findOne({ phone: normalizedPhone });
+        } else {
+            return res.status(400).json({ error: 'Email or phone number is required' });
+        }
+
+        // Don't reveal if user exists (security best practice)
+        // Always return success message to prevent user enumeration
+        if (!user) {
+            await LogModel.create({
+                level: 'warn',
+                source: 'auth',
+                message: 'password-reset-requested-for-non-existent-user',
+                metadata: { email, phone, ip: req.ip },
+            });
+            return res.json({
+                ok: true,
+                message: 'If an account with that email/phone exists, a password reset link has been sent.',
+            });
+        }
+
+        // Check if user has email (required for password reset)
+        if (!user.email) {
+            return res.status(400).json({
+                error: 'Email address is required for password reset. Please contact support.',
+            });
+        }
+
+        // Generate reset token
+        const resetToken = user.generatePasswordResetToken();
+        await user.save();
+
+        // Send reset email
+        const emailTemplates = require('../lib/emailTemplates');
+        const config = emailService.getEmailConfig();
+        
+        const resetLink = `${config.frontendUrl}/reset-password?token=${resetToken}`;
+
+        try {
+            await emailService.sendEmail({
+                to: user.email,
+                toName: user.name || user.email,
+                subject: 'Reset Your Password - Wifi Mtaani',
+                htmlContent: emailTemplates.getPasswordResetTemplate(
+                    user.name || 'User',
+                    resetLink,
+                    30
+                ),
+            });
+
+            await LogModel.create({
+                level: 'info',
+                source: 'auth',
+                message: 'password-reset-email-sent',
+                metadata: { userId: user._id, email: user.email },
+            });
+
+            res.json({
+                ok: true,
+                message: 'If an account with that email/phone exists, a password reset link has been sent.',
+            });
+        } catch (emailError) {
+            logger.error('Failed to send password reset email', {
+                userId: user._id,
+                email: user.email,
+                error: emailError.message,
+            });
+
+            // Clear the token if email failed
+            user.clearPasswordResetToken();
+            await user.save();
+
+            return res.status(500).json({
+                error: 'Failed to send password reset email. Please try again later or contact support.',
+            });
+        }
+    } catch (error) {
+        logger.error('Forgot password error', { error: error.message, stack: error.stack });
+        res.status(500).json({ error: 'An error occurred. Please try again later.' });
+    }
+});
+
+// Reset password - validate token and update password
+router.post('/reset-password', passwordResetLimiter, async (req, res) => {
+    try {
+        const { token, newPassword } = req.body;
+
+        if (!token || !newPassword) {
+            return res.status(400).json({ error: 'Token and new password are required' });
+        }
+
+        if (newPassword.length < 6) {
+            return res.status(400).json({ error: 'Password must be at least 6 characters' });
+        }
+
+        // Find user with matching reset token
+        const users = await User.find({
+            passwordResetExpires: { $gt: Date.now() },
+        });
+
+        let user = null;
+        for (const u of users) {
+            const isValid = await u.verifyPasswordResetToken(token);
+            if (isValid) {
+                user = u;
+                break;
+            }
+        }
+
+        if (!user) {
+            return res.status(400).json({
+                error: 'Invalid or expired reset token. Please request a new password reset.',
+            });
+        }
+
+        // Update password
+        await user.setPassword(newPassword);
+        user.clearPasswordResetToken();
+        await user.save();
+
+        // Send confirmation email
+        if (user.email) {
+            const emailTemplates = require('../lib/emailTemplates');
+            
+            emailService.sendEmailAsync({
+                to: user.email,
+                toName: user.name || user.email,
+                subject: 'Password Changed Successfully - Wifi Mtaani',
+                htmlContent: emailTemplates.getPasswordChangedTemplate(user.name || 'User'),
+            });
+        }
+
+        await LogModel.create({
+            level: 'info',
+            source: 'auth',
+            message: 'password-reset-completed',
+            metadata: { userId: user._id, email: user.email },
+        });
+
+        res.json({
+            ok: true,
+            message: 'Password has been reset successfully. You can now log in with your new password.',
+        });
+    } catch (error) {
+        logger.error('Reset password error', { error: error.message, stack: error.stack });
+        res.status(500).json({ error: 'An error occurred. Please try again later.' });
     }
 });
 

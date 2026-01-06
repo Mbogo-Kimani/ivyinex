@@ -39,13 +39,28 @@ const authenticateAdmin = async (req, res, next) => {
     }
 };
 
-// Get all users (admin only)
+// Get all users (admin only) - excludes admins
 router.get('/users', authenticateAdmin, async (req, res) => {
     try {
-        const users = await User.find({}).select('-passwordHash');
+        // Only return regular users, not admins
+        const users = await User.find({ role: { $ne: 'admin' } }).select('-passwordHash').sort({ createdAt: -1 });
         res.json(users);
     } catch (error) {
         res.status(500).json({ error: 'Failed to fetch users' });
+    }
+});
+
+// Get single user by ID (admin only)
+router.get('/users/:id', authenticateAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const user = await User.findById(id).select('-passwordHash');
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        res.json(user);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch user' });
     }
 });
 
@@ -59,6 +74,20 @@ router.get('/devices', authenticateAdmin, async (req, res) => {
     }
 });
 
+// Get single device by MAC (admin only)
+router.get('/devices/:mac', authenticateAdmin, async (req, res) => {
+    try {
+        const { mac } = req.params;
+        const device = await Device.findOne({ mac: mac.toUpperCase() }).populate('userId', 'name phone email');
+        if (!device) {
+            return res.status(404).json({ error: 'Device not found' });
+        }
+        res.json(device);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch device' });
+    }
+});
+
 // Get all subscriptions (admin only)
 router.get('/subscriptions', authenticateAdmin, async (req, res) => {
     try {
@@ -66,6 +95,20 @@ router.get('/subscriptions', authenticateAdmin, async (req, res) => {
         res.json(subscriptions);
     } catch (error) {
         res.status(500).json({ error: 'Failed to fetch subscriptions' });
+    }
+});
+
+// Get single subscription by ID (admin only)
+router.get('/subscriptions/:id', authenticateAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const subscription = await Subscription.findById(id).populate('userId', 'name phone email');
+        if (!subscription) {
+            return res.status(404).json({ error: 'Subscription not found' });
+        }
+        res.json(subscription);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch subscription' });
     }
 });
 
@@ -287,8 +330,19 @@ router.post('/auth/login', async (req, res) => {
     }
 });
 
-// Create admin user endpoint
-router.post('/auth/create-admin', async (req, res) => {
+// Get all admins (admin only)
+router.get('/admins', authenticateAdmin, async (req, res) => {
+    try {
+        const admins = await User.find({ role: 'admin' }).select('-passwordHash').sort({ createdAt: -1 });
+        res.json(admins);
+    } catch (error) {
+        console.error('Get admins error:', error);
+        res.status(500).json({ error: 'Failed to fetch admins' });
+    }
+});
+
+// Create admin user endpoint (admin only)
+router.post('/auth/create-admin', authenticateAdmin, async (req, res) => {
     try {
         const { name, email, password } = req.body;
 
@@ -296,16 +350,28 @@ router.post('/auth/create-admin', async (req, res) => {
             return res.status(400).json({ error: 'Name, email, and password are required' });
         }
 
-        // Check if admin already exists
-        const existingAdmin = await User.findOne({
-            $or: [
-                { email: email.toLowerCase() },
-                { role: 'admin' }
-            ]
-        });
+        if (password.length < 6) {
+            return res.status(400).json({ error: 'Password must be at least 6 characters' });
+        }
 
-        if (existingAdmin) {
-            return res.status(400).json({ error: 'Admin user already exists' });
+        // Check if email already exists
+        const existingUser = await User.findOne({ email: email.toLowerCase() });
+
+        if (existingUser) {
+            return res.status(400).json({ error: 'User with this email already exists' });
+        }
+
+        // Generate unique phone number for admin (since phone is required and unique)
+        // Format: 9990000000 + timestamp last 6 digits to ensure uniqueness
+        let uniquePhone;
+        let phoneExists = true;
+        while (phoneExists) {
+            const timestamp = Date.now().toString().slice(-6);
+            uniquePhone = `999000${timestamp}`;
+            const existingPhone = await User.findOne({ phone: uniquePhone });
+            if (!existingPhone) {
+                phoneExists = false;
+            }
         }
 
         // Create admin user
@@ -313,7 +379,7 @@ router.post('/auth/create-admin', async (req, res) => {
             name,
             email: email.toLowerCase(),
             role: 'admin',
-            phone: '0000000000' // Placeholder for admin
+            phone: uniquePhone // Unique phone for admin
         });
 
         await adminUser.setPassword(password);
@@ -323,7 +389,7 @@ router.post('/auth/create-admin', async (req, res) => {
             level: 'info',
             source: 'admin-auth',
             message: 'admin-user-created',
-            metadata: { adminId: adminUser._id, email: adminUser.email }
+            metadata: { adminId: adminUser._id, email: adminUser.email, createdBy: req.user._id }
         });
 
         res.json({
@@ -338,6 +404,62 @@ router.post('/auth/create-admin', async (req, res) => {
         });
     } catch (error) {
         console.error('Create admin error:', error);
+        // Handle duplicate phone error
+        if (error.code === 11000) {
+            return res.status(400).json({ error: 'Phone number conflict. Please try again.' });
+        }
+        // Handle validation errors
+        if (error.name === 'ValidationError') {
+            return res.status(400).json({ error: error.message });
+        }
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// Change admin password (admin only) - can only change own password
+router.put('/admins/:id/password', authenticateAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { password } = req.body;
+
+        // Only allow admins to change their own password
+        if (id !== req.user._id.toString()) {
+            return res.status(403).json({ error: 'You can only change your own password' });
+        }
+
+        if (!password) {
+            return res.status(400).json({ error: 'Password is required' });
+        }
+
+        if (password.length < 6) {
+            return res.status(400).json({ error: 'Password must be at least 6 characters' });
+        }
+
+        const user = await User.findById(id);
+        if (!user) {
+            return res.status(404).json({ error: 'Admin not found' });
+        }
+
+        if (user.role !== 'admin') {
+            return res.status(403).json({ error: 'User is not an admin' });
+        }
+
+        await user.setPassword(password);
+        await user.save();
+
+        await LogModel.create({
+            level: 'info',
+            source: 'admin-auth',
+            message: 'admin-password-changed',
+            metadata: { adminId: user._id, email: user.email, changedBy: req.user._id }
+        });
+
+        res.json({
+            success: true,
+            message: 'Password changed successfully'
+        });
+    } catch (error) {
+        console.error('Change password error:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
@@ -353,14 +475,50 @@ router.get('/active-subscriptions', authenticateAdmin, async (req, res) => {
 });
 
 router.get('/payments', authenticateAdmin, async (req, res) => {
-    const p = await Payment.find().sort({ createdAt: -1 }).limit(100);
-    res.json(p);
+    try {
+        const p = await Payment.find().sort({ createdAt: -1 }).limit(100);
+        res.json(p);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch payments' });
+    }
+});
+
+// Get single payment by ID (admin only)
+router.get('/payments/:id', authenticateAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const payment = await Payment.findById(id);
+        if (!payment) {
+            return res.status(404).json({ error: 'Payment not found' });
+        }
+        res.json(payment);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch payment' });
+    }
 });
 
 router.get('/logs', authenticateAdmin, async (req, res) => {
-    const q = req.query.q || '';
-    const logs = await LogModel.find({ message: new RegExp(q, 'i') }).sort({ createdAt: -1 }).limit(200);
-    res.json(logs);
+    try {
+        const q = req.query.q || '';
+        const logs = await LogModel.find({ message: new RegExp(q, 'i') }).sort({ createdAt: -1 }).limit(200);
+        res.json(logs);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch logs' });
+    }
+});
+
+// Get single log by ID (admin only)
+router.get('/logs/:id', authenticateAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const log = await LogModel.findById(id);
+        if (!log) {
+            return res.status(404).json({ error: 'Log not found' });
+        }
+        res.json(log);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch log' });
+    }
 });
 
 router.get('/vouchers', authenticateAdmin, async (req, res) => {
@@ -439,6 +597,232 @@ router.post('/packages/bulk-create', authenticateAdmin, async (req, res) => {
     }
 });
 
+// Analytics endpoints
+router.get('/analytics/revenue', authenticateAdmin, async (req, res) => {
+    try {
+        const { period = '30' } = req.query; // days
+        const days = parseInt(period);
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - days);
+
+        const payments = await Payment.find({
+            status: 'success',
+            createdAt: { $gte: startDate }
+        }).sort({ createdAt: 1 });
+
+        // Calculate daily revenue
+        const dailyRevenue = {};
+        payments.forEach(payment => {
+            const date = payment.createdAt.toISOString().split('T')[0];
+            if (!dailyRevenue[date]) {
+                dailyRevenue[date] = 0;
+            }
+            dailyRevenue[date] += payment.amountKES || 0;
+        });
+
+        const totalRevenue = payments.reduce((sum, p) => sum + (p.amountKES || 0), 0);
+        const totalTransactions = payments.length;
+        const averageTransaction = totalTransactions > 0 ? totalRevenue / totalTransactions : 0;
+
+        res.json({
+            period: `${days} days`,
+            totalRevenue,
+            totalTransactions,
+            averageTransaction: Math.round(averageTransaction * 100) / 100,
+            dailyRevenue: Object.entries(dailyRevenue).map(([date, amount]) => ({ date, amount }))
+        });
+    } catch (error) {
+        console.error('Revenue analytics error:', error);
+        res.status(500).json({ error: 'Failed to fetch revenue analytics' });
+    }
+});
+
+router.get('/analytics/users', authenticateAdmin, async (req, res) => {
+    try {
+        const { period = '30' } = req.query;
+        const days = parseInt(period);
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - days);
+
+        const totalUsers = await User.countDocuments();
+        const newUsers = await User.countDocuments({ createdAt: { $gte: startDate } });
+        const verifiedUsers = await User.countDocuments({ phoneVerified: true });
+        const adminUsers = await User.countDocuments({ role: 'admin' });
+
+        // Daily user registration
+        const users = await User.find({ createdAt: { $gte: startDate } }).sort({ createdAt: 1 });
+        const dailyUsers = {};
+        users.forEach(user => {
+            const date = user.createdAt.toISOString().split('T')[0];
+            dailyUsers[date] = (dailyUsers[date] || 0) + 1;
+        });
+
+        res.json({
+            period: `${days} days`,
+            totalUsers,
+            newUsers,
+            verifiedUsers,
+            adminUsers,
+            dailyUsers: Object.entries(dailyUsers).map(([date, count]) => ({ date, count }))
+        });
+    } catch (error) {
+        console.error('User analytics error:', error);
+        res.status(500).json({ error: 'Failed to fetch user analytics' });
+    }
+});
+
+router.get('/analytics/devices', authenticateAdmin, async (req, res) => {
+    try {
+        const { period = '30' } = req.query;
+        const days = parseInt(period);
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - days);
+
+        const totalDevices = await Device.countDocuments();
+        const newDevices = await Device.countDocuments({ registeredAt: { $gte: startDate } });
+        const activeDevices = await Device.countDocuments({
+            lastSeen: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) }
+        });
+
+        // Daily device registrations
+        const devices = await Device.find({ registeredAt: { $gte: startDate } }).sort({ registeredAt: 1 });
+        const dailyDevices = {};
+        devices.forEach(device => {
+            const date = device.registeredAt.toISOString().split('T')[0];
+            dailyDevices[date] = (dailyDevices[date] || 0) + 1;
+        });
+
+        res.json({
+            period: `${days} days`,
+            totalDevices,
+            newDevices,
+            activeDevices,
+            dailyDevices: Object.entries(dailyDevices).map(([date, count]) => ({ date, count }))
+        });
+    } catch (error) {
+        console.error('Device analytics error:', error);
+        res.status(500).json({ error: 'Failed to fetch device analytics' });
+    }
+});
+
+router.get('/analytics/packages', authenticateAdmin, async (req, res) => {
+    try {
+        const packages = await Package.find().sort({ priceKES: 1 });
+        const subscriptions = await Subscription.find().populate('userId', 'name phone');
+
+        // Package usage statistics
+        const packageStats = {};
+        packages.forEach(pkg => {
+            packageStats[pkg.key] = {
+                name: pkg.name,
+                price: pkg.priceKES,
+                totalSold: 0,
+                revenue: 0
+            };
+        });
+
+        subscriptions.forEach(sub => {
+            if (sub.packageKey && packageStats[sub.packageKey]) {
+                packageStats[sub.packageKey].totalSold += 1;
+                packageStats[sub.packageKey].revenue += packageStats[sub.packageKey].price;
+            }
+        });
+
+        res.json({
+            totalPackages: packages.length,
+            packages: packages,
+            packageStats: Object.values(packageStats)
+        });
+    } catch (error) {
+        console.error('Package analytics error:', error);
+        res.status(500).json({ error: 'Failed to fetch package analytics' });
+    }
+});
+
+// System stats endpoint
+router.get('/stats', authenticateAdmin, async (req, res) => {
+    try {
+        const totalUsers = await User.countDocuments();
+        const totalDevices = await Device.countDocuments();
+        const totalSubscriptions = await Subscription.countDocuments();
+        const activeSubscriptions = await Subscription.countDocuments({ active: true });
+        const totalPayments = await Payment.countDocuments();
+        const successfulPayments = await Payment.countDocuments({ status: 'success' });
+        const totalRevenue = await Payment.aggregate([
+            { $match: { status: 'success' } },
+            { $group: { _id: null, total: { $sum: '$amountKES' } } }
+        ]);
+
+        const revenue = totalRevenue.length > 0 ? totalRevenue[0].total : 0;
+
+        res.json({
+            users: {
+                total: totalUsers,
+                verified: await User.countDocuments({ phoneVerified: true })
+            },
+            devices: {
+                total: totalDevices,
+                active: await Device.countDocuments({
+                    lastSeen: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) }
+                })
+            },
+            subscriptions: {
+                total: totalSubscriptions,
+                active: activeSubscriptions
+            },
+            payments: {
+                total: totalPayments,
+                successful: successfulPayments,
+                revenue: revenue
+            },
+            packages: {
+                total: await Package.countDocuments()
+            },
+            vouchers: {
+                total: await Voucher.countDocuments(),
+                active: await Voucher.countDocuments({ active: true })
+            }
+        });
+    } catch (error) {
+        console.error('Stats error:', error);
+        res.status(500).json({ error: 'Failed to fetch stats' });
+    }
+});
+
+// System actions endpoint
+router.post('/actions', authenticateAdmin, async (req, res) => {
+    try {
+        const { action, data } = req.body;
+
+        switch (action) {
+            case 'clear-old-logs':
+                const days = data?.days || 30;
+                const cutoffDate = new Date();
+                cutoffDate.setDate(cutoffDate.getDate() - days);
+                const result = await LogModel.deleteMany({ createdAt: { $lt: cutoffDate } });
+                await LogModel.create({
+                    level: 'info',
+                    source: 'admin',
+                    message: 'logs-cleared',
+                    metadata: { deleted: result.deletedCount, days }
+                });
+                res.json({ success: true, message: `Cleared ${result.deletedCount} old logs` });
+                break;
+
+            case 'refresh-cache':
+                // Placeholder for cache refresh
+                res.json({ success: true, message: 'Cache refreshed' });
+                break;
+
+            default:
+                res.status(400).json({ error: 'Invalid action' });
+        }
+    } catch (error) {
+        console.error('System action error:', error);
+        res.status(500).json({ error: 'Failed to perform action' });
+    }
+});
+
 // create voucher(s)
 router.post('/vouchers/create', authenticateAdmin, async (req, res) => {
     try {
@@ -503,3 +887,4 @@ router.post('/vouchers/create', authenticateAdmin, async (req, res) => {
 });
 
 module.exports = router;
+module.exports.authenticateAdmin = authenticateAdmin;

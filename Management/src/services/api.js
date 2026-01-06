@@ -29,10 +29,15 @@ api.interceptors.request.use(
 api.interceptors.response.use(
     (response) => response,
     (error) => {
-        if (error.response?.status === 401) {
-            // Unauthorized - redirect to login
+        if (error.response?.status === 401 || error.response?.status === 403) {
+            // Unauthorized or Forbidden - clear token and redirect to login
             localStorage.removeItem('admin_token');
-            window.location.href = '/login';
+            localStorage.removeItem('admin_user');
+            
+            // Only redirect if not already on login page
+            if (window.location.pathname !== '/login') {
+                window.location.href = '/login';
+            }
         }
         return Promise.reject(error);
     }
@@ -105,6 +110,12 @@ export const apiEndpoints = {
         health: '/admin/health',
         stats: '/admin/stats',
         actions: '/admin/actions',
+    },
+
+    // Admins
+    admins: {
+        list: '/admin/admins',
+        changePassword: (id) => `/admin/admins/${id}/password`,
     },
 
     // Logs
@@ -293,6 +304,17 @@ export const apiMethods = {
 
     getLog: async (id) => {
         const response = await api.get(apiEndpoints.logs.get(id));
+        return response.data;
+    },
+
+    // Admins
+    getAdmins: async () => {
+        const response = await api.get(apiEndpoints.admins.list);
+        return response.data;
+    },
+
+    changeAdminPassword: async (adminId, password) => {
+        const response = await api.put(apiEndpoints.admins.changePassword(adminId), { password });
         return response.data;
     },
 };

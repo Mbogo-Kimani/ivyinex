@@ -25,6 +25,8 @@ import { useData } from '../hooks/useApi.jsx';
 import { apiMethods } from '../services/api';
 import { formatDate, formatCurrency, formatNumber } from '../utils/formatters';
 import SubscriptionDetails from '../components/Subscriptions/SubscriptionDetails';
+import { useAuth } from '../hooks/useAuth';
+import toast from 'react-hot-toast';
 
 const Subscriptions = () => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -36,8 +38,11 @@ const Subscriptions = () => {
     const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
     const [selectedSubscription, setSelectedSubscription] = useState(null);
 
-    // Fetch subscriptions data
-    const { data: subscriptionsData, loading: subscriptionsLoading, refetch: refetchSubscriptions } = useData(apiMethods.getSubscriptions);
+    // Get authentication status
+    const { isAuthenticated } = useAuth();
+
+    // Fetch subscriptions data only if authenticated
+    const { data: subscriptionsData, loading: subscriptionsLoading, refetch: refetchSubscriptions } = useData(apiMethods.getSubscriptions, [], { enabled: isAuthenticated });
 
     // Filter and search subscriptions
     const filteredSubscriptions = subscriptionsData?.filter(subscription => {
@@ -95,13 +100,21 @@ const Subscriptions = () => {
         setShowSubscriptionModal(true);
     };
 
-    const handleSaveSubscription = async (updatedSubscription) => {
+    const handleSaveSubscription = async (subscriptionData) => {
         try {
-            await apiMethods.updateSubscription(selectedSubscription._id, updatedSubscription);
+            if (selectedSubscription && selectedSubscription._id) {
+                // Update existing subscription
+                await apiMethods.updateSubscription(selectedSubscription._id, subscriptionData);
+                toast.success('Subscription updated successfully');
+            } else {
+                // Create new subscription - note: subscriptions are usually created automatically
+                toast('Subscriptions are typically created automatically when users make payments. Manual creation requires backend support.', { icon: 'ℹ️' });
+            }
             refetchSubscriptions();
             setShowSubscriptionModal(false);
         } catch (error) {
-            console.error('Error updating subscription:', error);
+            console.error('Error saving subscription:', error);
+            toast.error(selectedSubscription ? 'Failed to update subscription' : 'Failed to create subscription');
         }
     };
 
@@ -109,9 +122,11 @@ const Subscriptions = () => {
         if (window.confirm('Are you sure you want to delete this subscription?')) {
             try {
                 await apiMethods.deleteSubscription(subscriptionId);
+                toast.success('Subscription deleted successfully');
                 refetchSubscriptions();
             } catch (error) {
                 console.error('Error deleting subscription:', error);
+                toast.error('Failed to delete subscription');
             }
         }
     };
@@ -119,18 +134,22 @@ const Subscriptions = () => {
     const handleSuspendSubscription = async (subscriptionId) => {
         try {
             await apiMethods.updateSubscription(subscriptionId, { suspended: true, active: false });
+            toast.success('Subscription suspended successfully');
             refetchSubscriptions();
         } catch (error) {
             console.error('Error suspending subscription:', error);
+            toast.error('Failed to suspend subscription');
         }
     };
 
     const handleActivateSubscription = async (subscriptionId) => {
         try {
             await apiMethods.updateSubscription(subscriptionId, { suspended: false, active: true });
+            toast.success('Subscription activated successfully');
             refetchSubscriptions();
         } catch (error) {
             console.error('Error activating subscription:', error);
+            toast.error('Failed to activate subscription');
         }
     };
 
@@ -192,7 +211,13 @@ const Subscriptions = () => {
                         </p>
                     </div>
                 </div>
-                <button className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <button 
+                    onClick={() => {
+                        setSelectedSubscription(null);
+                        setShowSubscriptionModal(true);
+                    }}
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
                     <Plus className="w-4 h-4 mr-2" />
                     Create Subscription
                 </button>

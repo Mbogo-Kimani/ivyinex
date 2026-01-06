@@ -22,7 +22,7 @@ const Layout = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 flex">
+        <div className="min-h-screen bg-gray-50">
             {/* Sidebar */}
             <Sidebar
                 isOpen={sidebarOpen}
@@ -30,7 +30,7 @@ const Layout = () => {
             />
 
             {/* Main content */}
-            <div className="flex-1 flex flex-col lg:ml-64">
+            <div className="lg:pl-64 flex flex-col min-h-screen">
                 {/* Header */}
                 <Header onMenuClick={() => setSidebarOpen(true)} />
 

@@ -16,13 +16,15 @@ import {
 import { formatDate, formatNumber } from '../../utils/formatters';
 
 const UserDetails = ({ user, onClose, onSave }) => {
-    const [isEditing, setIsEditing] = useState(false);
+    const isNewUser = !user || !user._id;
+    const [isEditing, setIsEditing] = useState(isNewUser);
     const [editedUser, setEditedUser] = useState({
-        name: user.name || '',
-        email: user.email || '',
-        phone: user.phone || '',
-        phoneVerified: user.phoneVerified || false,
-        points: user.points || 0,
+        name: user?.name || '',
+        email: user?.email || '',
+        phone: user?.phone || '',
+        password: '',
+        phoneVerified: user?.phoneVerified || false,
+        points: user?.points || 0,
     });
 
     const handleSave = () => {
@@ -32,13 +34,18 @@ const UserDetails = ({ user, onClose, onSave }) => {
 
     const handleCancel = () => {
         setEditedUser({
-            name: user.name || '',
-            email: user.email || '',
-            phone: user.phone || '',
-            phoneVerified: user.phoneVerified || false,
-            points: user.points || 0,
+            name: user?.name || '',
+            email: user?.email || '',
+            phone: user?.phone || '',
+            password: '',
+            phoneVerified: user?.phoneVerified || false,
+            points: user?.points || 0,
         });
-        setIsEditing(false);
+        if (isNewUser) {
+            onClose();
+        } else {
+            setIsEditing(false);
+        }
     };
 
     const handleChange = (field, value) => {
@@ -54,19 +61,19 @@ const UserDetails = ({ user, onClose, onSave }) => {
                 <div className="mt-3">
                     {/* Header */}
                     <div className="flex items-center justify-between mb-6">
-                        <div className="flex items-center">
-                            <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center mr-4">
-                                <span className="text-lg font-medium text-blue-600">
-                                    {user.name?.charAt(0)?.toUpperCase() || 'U'}
-                                </span>
+                            <div className="flex items-center">
+                                <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center mr-4">
+                                    <span className="text-lg font-medium text-blue-600">
+                                        {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                                    </span>
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-medium text-gray-900">
+                                        {isNewUser ? 'Create New User' : (user?.name || 'Unknown User')}
+                                    </h3>
+                                    <p className="text-sm text-gray-500">{isNewUser ? 'Add a new user account' : 'User Details'}</p>
+                                </div>
                             </div>
-                            <div>
-                                <h3 className="text-lg font-medium text-gray-900">
-                                    {user.name || 'Unknown User'}
-                                </h3>
-                                <p className="text-sm text-gray-500">User Details</p>
-                            </div>
-                        </div>
                         <div className="flex items-center space-x-2">
                             {isEditing ? (
                                 <>
@@ -142,18 +149,33 @@ const UserDetails = ({ user, onClose, onSave }) => {
                             </div>
 
                             <div>
-                                <label className="text-sm font-medium text-gray-500">Email</label>
+                                <label className="text-sm font-medium text-gray-500">Email {isNewUser && '*'}</label>
                                 {isEditing ? (
                                     <input
                                         type="email"
+                                        required={isNewUser}
                                         value={editedUser.email}
                                         onChange={(e) => handleChange('email', e.target.value)}
                                         className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                     />
                                 ) : (
-                                    <p className="text-sm text-gray-900 mt-1">{user.email || 'No email'}</p>
+                                    <p className="text-sm text-gray-900 mt-1">{user?.email || 'No email'}</p>
                                 )}
                             </div>
+
+                            {isNewUser && (
+                                <div>
+                                    <label className="text-sm font-medium text-gray-500">Password *</label>
+                                    <input
+                                        type="password"
+                                        required
+                                        value={editedUser.password}
+                                        onChange={(e) => handleChange('password', e.target.value)}
+                                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        placeholder="Enter password"
+                                    />
+                                </div>
+                            )}
 
                             <div>
                                 <label className="text-sm font-medium text-gray-500">Status</label>

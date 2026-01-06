@@ -37,12 +37,27 @@ export const useApi = () => {
 };
 
 // Hook for data fetching with caching
-export const useData = (apiFunction, dependencies = []) => {
+export const useData = (apiFunction, dependencies = [], options = {}) => {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const { enabled = true } = options;
 
     const fetchData = useCallback(async () => {
+        // Check if hook is enabled and user is authenticated
+        if (!enabled) {
+            setLoading(false);
+            return;
+        }
+
+        // Check authentication before making API call
+        const token = localStorage.getItem('admin_token');
+        if (!token) {
+            setLoading(false);
+            setError('Authentication required');
+            return;
+        }
+
         setLoading(true);
         setError(null);
 
@@ -50,12 +65,20 @@ export const useData = (apiFunction, dependencies = []) => {
             const result = await apiFunction();
             setData(result);
         } catch (err) {
-            const errorMessage = err.response?.data?.message || err.message || 'Failed to fetch data';
-            setError(errorMessage);
+            // Handle 403 and 401 errors gracefully
+            if (err.response?.status === 403 || err.response?.status === 401) {
+                // Clear invalid token
+                localStorage.removeItem('admin_token');
+                localStorage.removeItem('admin_user');
+                setError('Authentication required. Please login again.');
+            } else {
+                const errorMessage = err.response?.data?.message || err.response?.data?.error || err.message || 'Failed to fetch data';
+                setError(errorMessage);
+            }
         } finally {
             setLoading(false);
         }
-    }, dependencies);
+    }, [...dependencies, enabled]);
 
     useEffect(() => {
         fetchData();

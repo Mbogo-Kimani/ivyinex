@@ -17,6 +17,7 @@ import { formatCurrency, formatNumber, formatDate } from '../utils/formatters';
 import RevenueChart from '../components/Dashboard/RevenueChart';
 import UserChart from '../components/Dashboard/UserChart';
 import DeviceChart from '../components/Dashboard/DeviceChart';
+import { useAuth } from '../hooks/useAuth';
 
 const Dashboard = () => {
     const [stats, setStats] = useState({
@@ -37,11 +38,14 @@ const Dashboard = () => {
         lastUpdate: null,
     });
 
-    // Fetch dashboard data
-    const { data: paymentsData, loading: paymentsLoading } = useData(apiMethods.getPayments);
-    const { data: subscriptionsData, loading: subscriptionsLoading } = useData(apiMethods.getSubscriptions);
-    const { data: devicesData, loading: devicesLoading } = useData(apiMethods.getDevices);
-    const { data: systemHealthData, loading: systemLoading } = useData(apiMethods.getSystemHealth);
+    // Get authentication status
+    const { isAuthenticated } = useAuth();
+
+    // Fetch dashboard data only if authenticated
+    const { data: paymentsData, loading: paymentsLoading } = useData(apiMethods.getPayments, [], { enabled: isAuthenticated });
+    const { data: subscriptionsData, loading: subscriptionsLoading } = useData(apiMethods.getSubscriptions, [], { enabled: isAuthenticated });
+    const { data: devicesData, loading: devicesLoading } = useData(apiMethods.getDevices, [], { enabled: isAuthenticated });
+    const { data: systemHealthData, loading: systemLoading } = useData(apiMethods.getSystemHealth, [], { enabled: isAuthenticated });
 
     useEffect(() => {
         if (paymentsData) {

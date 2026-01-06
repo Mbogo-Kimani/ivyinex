@@ -410,3 +410,4 @@ export default function PaymentsPage() {
 **Status:** ❌ **Users cannot currently see payment errors**  
 **Recommendation:** Implement polling mechanism and payment status endpoint
 
+

@@ -36,12 +36,12 @@ const VoucherForm = ({ voucher, mode, onClose, onSave }) => {
             setFormData({
                 code: voucher.code || '',
                 packageKey: voucher.packageKey || '',
-                value: voucher.value || 0,
+                value: voucher.valueKES || voucher.value || 0,
                 type: voucher.type || 'single',
                 active: voucher.active !== undefined ? voucher.active : true,
                 expiresAt: voucher.expiresAt ? new Date(voucher.expiresAt).toISOString().slice(0, 16) : '',
                 notes: voucher.notes || '',
-                maxUses: voucher.maxUses || 1,
+                maxUses: voucher.maxUses || voucher.uses || 1,
                 usedCount: voucher.usedCount || 0,
             });
         } else {

@@ -24,6 +24,8 @@ import { useData } from '../hooks/useApi.jsx';
 import { apiMethods } from '../services/api';
 import { formatDate, formatNumber } from '../utils/formatters';
 import DeviceDetails from '../components/Devices/DeviceDetails';
+import { useAuth } from '../hooks/useAuth';
+import toast from 'react-hot-toast';
 
 const Devices = () => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -35,8 +37,11 @@ const Devices = () => {
     const [showDeviceModal, setShowDeviceModal] = useState(false);
     const [selectedDevice, setSelectedDevice] = useState(null);
 
-    // Fetch devices data
-    const { data: devicesData, loading: devicesLoading, refetch: refetchDevices } = useData(apiMethods.getDevices);
+    // Get authentication status
+    const { isAuthenticated } = useAuth();
+
+    // Fetch devices data only if authenticated
+    const { data: devicesData, loading: devicesLoading, refetch: refetchDevices } = useData(apiMethods.getDevices, [], { enabled: isAuthenticated });
 
     // Filter and search devices
     const filteredDevices = devicesData?.filter(device => {
@@ -95,23 +100,36 @@ const Devices = () => {
         setShowDeviceModal(true);
     };
 
-    const handleSaveDevice = async (updatedDevice) => {
+    const handleSaveDevice = async (deviceData) => {
         try {
-            await apiMethods.updateDevice(selectedDevice.mac, updatedDevice);
+            if (selectedDevice && selectedDevice.mac) {
+                // Update existing device
+                await apiMethods.updateDevice(selectedDevice.mac, deviceData);
+                toast.success('Device updated successfully');
+            } else {
+                // Create new device - note: devices are usually auto-registered
+                // This would require a create endpoint on the backend
+                toast('Devices are typically registered automatically when users connect. Manual creation requires backend support.', { icon: 'ℹ️' });
+            }
             refetchDevices();
             setShowDeviceModal(false);
         } catch (error) {
-            console.error('Error updating device:', error);
+            console.error('Error saving device:', error);
+            toast.error('Failed to save device');
         }
     };
 
-    const handleDeleteDevice = async (deviceId) => {
+    const handleDeleteDevice = async (device) => {
         if (window.confirm('Are you sure you want to delete this device?')) {
             try {
-                await apiMethods.deleteDevice(deviceId);
-                refetchDevices();
+                // Note: Backend doesn't have deleteDevice endpoint, so we'll just mark it
+                // In production, you might want to add a delete endpoint
+                toast('Device deletion is not available. Contact system administrator.', { icon: 'ℹ️' });
+                // await apiMethods.updateDevice(device.mac, { deleted: true });
+                // refetchDevices();
             } catch (error) {
                 console.error('Error deleting device:', error);
+                toast.error('Failed to delete device');
             }
         }
     };
@@ -196,7 +214,13 @@ const Devices = () => {
                         </p>
                     </div>
                 </div>
-                <button className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <button 
+                    onClick={() => {
+                        setSelectedDevice(null);
+                        setShowDeviceModal(true);
+                    }}
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
                     <Plus className="w-4 h-4 mr-2" />
                     Add Device
                 </button>
@@ -357,8 +381,9 @@ const Devices = () => {
                                                     <Edit className="h-4 w-4" />
                                                 </button>
                                                 <button
-                                                    onClick={() => handleDeleteDevice(device._id)}
+                                                    onClick={() => handleDeleteDevice(device)}
                                                     className="text-red-600 hover:text-red-900"
+                                                    title="Delete Device"
                                                 >
                                                     <Trash2 className="h-4 w-4" />
                                                 </button>
