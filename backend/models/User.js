@@ -70,7 +70,7 @@ UserSchema.methods.generatePasswordResetToken = function () {
   // Hash the token before saving
   const bcrypt = require('bcryptjs');
   this.passwordResetToken = bcrypt.hashSync(resetToken, 10);
-  this.passwordResetExpires = Date.now() + 30 * 60 * 1000; // 30 minutes
+  this.passwordResetExpires = Date.now() + 2 * 60 * 60 * 1000; // 2 hours (120 minutes)
   
   return resetToken;
 };

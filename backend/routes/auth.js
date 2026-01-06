@@ -264,7 +264,7 @@ router.post('/forgot-password', passwordResetLimiter, async (req, res) => {
                 htmlContent: emailTemplates.getPasswordResetTemplate(
                     user.name || 'User',
                     resetLink,
-                    30
+                    120 // 2 hours in minutes
                 ),
             });
 

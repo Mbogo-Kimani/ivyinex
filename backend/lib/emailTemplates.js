@@ -67,7 +67,21 @@ function getBaseTemplate(content, unsubscribeLink = null) {
 /**
  * Password Reset Email Template
  */
-function getPasswordResetTemplate(userName, resetLink, expiryMinutes = 30) {
+function getPasswordResetTemplate(userName, resetLink, expiryMinutes = 120) {
+    // Format expiry time in a user-friendly way
+    let expiryText;
+    if (expiryMinutes >= 60) {
+        const hours = Math.floor(expiryMinutes / 60);
+        const minutes = expiryMinutes % 60;
+        if (minutes === 0) {
+            expiryText = hours === 1 ? '1 hour' : `${hours} hours`;
+        } else {
+            expiryText = `${hours} hour${hours > 1 ? 's' : ''} and ${minutes} minute${minutes > 1 ? 's' : ''}`;
+        }
+    } else {
+        expiryText = expiryMinutes === 1 ? '1 minute' : `${expiryMinutes} minutes`;
+    }
+    
     const content = `
         <div style="color: #333333;">
             <h2 style="margin: 0 0 20px 0; color: #333333; font-size: 24px; font-weight: 600;">
@@ -98,7 +112,7 @@ function getPasswordResetTemplate(userName, resetLink, expiryMinutes = 30) {
             
             <div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 4px;">
                 <p style="margin: 0; color: #856404; font-size: 14px; line-height: 1.6;">
-                    <strong>⚠️ Security Notice:</strong> This link will expire in ${expiryMinutes} minutes. If you didn't request this, please ignore this email or contact support if you have concerns.
+                    <strong>⚠️ Security Notice:</strong> This link will expire in ${expiryText}. If you didn't request this, please ignore this email or contact support if you have concerns.
                 </p>
             </div>
         </div>

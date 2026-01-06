@@ -240,6 +240,12 @@ async function addContactToBrevo(email, attributes = {}, listIds = [], emailBlac
     try {
         const contactsApi = new SibApiV3Sdk.ContactsApi();
         
+        // Set API key for contacts API
+        const apiKey = process.env.BREVO_API_KEY;
+        if (apiKey) {
+            contactsApi.setApiKey(SibApiV3Sdk.ContactsApiApiKeys.apiKey, apiKey);
+        }
+        
         const createContact = new SibApiV3Sdk.CreateContact();
         createContact.email = email;
         createContact.attributes = attributes;
@@ -262,9 +268,27 @@ async function addContactToBrevo(email, attributes = {}, listIds = [], emailBlac
             return { success: true, message: 'Contact already exists' };
         }
 
+        // Handle authentication errors (401)
+        const errorResponse = error.response?.body || error.body;
+        const statusCode = error.response?.statusCode || error.statusCode || error.status;
+        
+        if (statusCode === 401) {
+            logger.error('Brevo API authentication failed when adding contact', {
+                email,
+                error: error.message,
+                hint: 'Check BREVO_API_KEY in environment variables - it may be invalid or expired',
+            });
+            return {
+                success: false,
+                error: 'Brevo API authentication failed. Please check API key configuration.',
+            };
+        }
+
         logger.error('Failed to add contact to Brevo', {
             email,
             error: error.message,
+            statusCode,
+            errorResponse: errorResponse ? JSON.stringify(errorResponse).substring(0, 200) : null,
         });
 
         return {
