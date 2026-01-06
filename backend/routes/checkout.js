@@ -175,8 +175,26 @@ router.post('/start', async (req, res) => {
 router.post('/daraja-callback', async (req, res) => {
   // Daraja callback raw body: req.body
   const cb = req.body;
-  await LogModel.create({ level: 'info', source: 'daraja-callback', message: 'callback-received', metadata: cb });
-  logger.info('Daraja callback received', { body: JSON.stringify(cb).substring(0, 500) }); // Log first 500 chars for debugging
+  
+  // Log full callback for debugging (first 1000 chars)
+  const callbackLog = JSON.stringify(cb, null, 2);
+  logger.info('Daraja callback received - FULL', { 
+    body: callbackLog.substring(0, 1000),
+    headers: req.headers,
+    method: req.method,
+    url: req.url
+  });
+  
+  await LogModel.create({ 
+    level: 'info', 
+    source: 'daraja-callback', 
+    message: 'callback-received', 
+    metadata: { 
+      body: cb,
+      headers: req.headers,
+      timestamp: new Date().toISOString()
+    } 
+  });
   // Real implementation must validate and extract CheckoutRequestID and ResultCode/ResultDesc
   try {
     // For MVP we expect the body contains checkoutRequestID and ResultCode
@@ -196,17 +214,67 @@ router.post('/daraja-callback', async (req, res) => {
     });
 
     // Find payment by matching checkout id in providerPayload
-    // CRITICAL: Only match by CheckoutRequestID, no fallback to prevent wrong payment matching
-    const payment = await Payment.findOne({ 'providerPayload.CheckoutRequestID': checkoutRequestID });
+    let payment = await Payment.findOne({ 'providerPayload.CheckoutRequestID': checkoutRequestID });
+
+    // If not found by CheckoutRequestID, try to find by account reference in callback metadata
+    if (!payment && stkCallback.CallbackMetadata?.Item) {
+      const accountRefItem = stkCallback.CallbackMetadata.Item.find(i => i.Name === 'AccountReference');
+      if (accountRefItem?.Value) {
+        const accountRef = accountRefItem.Value;
+        // AccountRef format: hotspot_<payment._id>
+        if (accountRef.startsWith('hotspot_')) {
+          const paymentIdFromRef = accountRef.replace('hotspot_', '');
+          try {
+            payment = await Payment.findById(paymentIdFromRef);
+            if (payment) {
+              logger.info('Payment found by account reference', { 
+                paymentId: payment._id, 
+                checkoutRequestID,
+                accountRef 
+              });
+            }
+          } catch (err) {
+            logger.warn('Invalid payment ID in account reference', { accountRef, err: err.message });
+          }
+        }
+      }
+    }
+
+    // Last resort: find most recent pending payment (with time limit - last 10 minutes)
+    if (!payment) {
+      const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+      payment = await Payment.findOne({
+        status: 'pending',
+        createdAt: { $gte: tenMinutesAgo }
+      }).sort({ createdAt: -1 });
+      
+      if (payment) {
+        logger.warn('Payment found by fallback (recent pending)', {
+          paymentId: payment._id,
+          checkoutRequestID,
+          createdAt: payment.createdAt
+        });
+      }
+    }
 
     if (!payment) {
       await LogModel.create({
         level: 'warn',
         source: 'daraja-callback',
         message: 'payment-not-found',
-        metadata: { checkoutRequestID, resultCode, resultDesc }
+        metadata: { 
+          checkoutRequestID, 
+          resultCode, 
+          resultDesc,
+          callbackBody: JSON.stringify(cb).substring(0, 500)
+        }
       });
-      logger.warn('Payment not found for callback', { checkoutRequestID });
+      logger.warn('Payment not found for callback', { 
+        checkoutRequestID,
+        resultCode,
+        resultDesc,
+        availablePayments: await Payment.countDocuments({ status: 'pending' })
+      });
       return res.status(200).send('payment not found');
     }
 
@@ -476,6 +544,94 @@ router.post('/daraja-callback', async (req, res) => {
     // Always return 200 to Daraja to acknowledge receipt
     // Even if we have errors, we don't want Daraja to retry
     return res.status(200).send('error');
+  }
+});
+
+/**
+ * GET /api/checkout/test-callback
+ * Test endpoint to verify callback URL is accessible
+ */
+router.get('/test-callback', (req, res) => {
+  res.json({
+    status: 'ok',
+    message: 'Callback endpoint is accessible',
+    timestamp: new Date().toISOString(),
+    path: '/api/checkout/daraja-callback'
+  });
+});
+
+/**
+ * POST /api/checkout/test-callback
+ * Test endpoint to simulate callback for debugging
+ */
+router.post('/test-callback', async (req, res) => {
+  try {
+    const { paymentId, resultCode = 1, resultDesc = 'Insufficient balance' } = req.body;
+    
+    if (!paymentId) {
+      return res.status(400).json({ error: 'paymentId required' });
+    }
+
+    const payment = await Payment.findById(paymentId);
+    if (!payment) {
+      return res.status(404).json({ error: 'Payment not found' });
+    }
+
+    // Simulate callback processing
+    const errorMessage = getErrorMessage(resultCode, resultDesc);
+    payment.status = 'failed';
+    payment.providerPayload = {
+      ...payment.providerPayload,
+      ResultCode: resultCode,
+      ResultDesc: resultDesc,
+      errorMessage: errorMessage,
+      errorCode: resultCode,
+      failedAt: new Date(),
+      testCallback: true
+    };
+    await payment.save();
+
+    logger.info('Test callback processed', { paymentId, resultCode, errorMessage });
+
+    res.json({
+      status: 'ok',
+      message: 'Test callback processed',
+      paymentId: payment._id,
+      paymentStatus: payment.status,
+      errorMessage
+    });
+  } catch (err) {
+    logger.error('Test callback error', { err: err.message });
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * GET /api/checkout/pending-payments
+ * Get list of pending payments (for debugging)
+ */
+router.get('/pending-payments', async (req, res) => {
+  try {
+    const pendingPayments = await Payment.find({ status: 'pending' })
+      .sort({ createdAt: -1 })
+      .limit(10)
+      .select('_id amountKES packageKey phone createdAt providerPayload');
+    
+    res.json({
+      count: pendingPayments.length,
+      payments: pendingPayments.map(p => ({
+        paymentId: p._id,
+        amountKES: p.amountKES,
+        packageKey: p.packageKey,
+        phone: p.phone,
+        createdAt: p.createdAt,
+        checkoutRequestID: p.providerPayload?.CheckoutRequestID || null,
+        ageMinutes: Math.round((Date.now() - p.createdAt) / 60000)
+      }))
+    });
+  } catch (err) {
+    logger.error('Failed to get pending payments', { err: err.message });
+    res.status(500).json({ error: 'Failed to get pending payments' });
   }
 });
 
