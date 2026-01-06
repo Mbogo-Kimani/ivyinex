@@ -81,6 +81,13 @@ function validateSenderEmail() {
  * @returns {Promise<Object>} - Send result
  */
 async function sendEmail({ to, toName, subject, htmlContent, textContent, params = {} }) {
+    // Always check if API key is available (in case it was added after server start)
+    const apiKey = process.env.BREVO_API_KEY;
+    if (!apiKey) {
+        throw new Error('Email service is not initialized. BREVO_API_KEY not found in environment variables.');
+    }
+    
+    // Initialize or re-initialize if needed
     if (!apiInstance) {
         const initialized = initializeEmailService();
         if (!initialized) {
@@ -346,15 +353,19 @@ async function updateContactPreferences(email, emailBlacklisted) {
     }
 }
 
-// Initialize on module load
-initializeEmailService();
-
-// Validate sender email on startup
-if (process.env.EMAIL_FROM_ADDRESS) {
-    validateSenderEmail();
-} else {
-    logger.warn('EMAIL_FROM_ADDRESS not set. Configure your personal email address in environment variables.');
-}
+// Initialize on module load (but only if dotenv has already loaded)
+// Delay initialization to ensure dotenv has loaded first
+// This will be called when the module is first required, but we'll re-check when actually sending
+setTimeout(() => {
+    initializeEmailService();
+    
+    // Validate sender email on startup
+    if (process.env.EMAIL_FROM_ADDRESS) {
+        validateSenderEmail();
+    } else {
+        logger.warn('EMAIL_FROM_ADDRESS not set. Configure your personal email address in environment variables.');
+    }
+}, 100); // Small delay to ensure dotenv has loaded
 
 module.exports = {
     sendEmail,

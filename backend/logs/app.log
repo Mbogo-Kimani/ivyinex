@@ -1096,3 +1096,13 @@
 {"level":"info","message":"MongoDB connection established","timestamp":"2026-01-06T14:33:05.665Z"}
 {"level":"info","message":"Server started on port 5000","timestamp":"2026-01-06T14:33:05.690Z"}
 {"level":"info","message":"Cleanup job started","timestamp":"2026-01-06T14:33:07.770Z"}
+{"level":"info","message":"Email service initialized successfully","timestamp":"2026-01-06T14:47:38.501Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2026-01-06T14:47:42.597Z"}
+{"level":"info","message":"MongoDB connection established","timestamp":"2026-01-06T14:47:42.632Z"}
+{"level":"info","message":"Server started on port 5000","timestamp":"2026-01-06T14:47:42.678Z"}
+{"level":"info","message":"Cleanup job started","timestamp":"2026-01-06T14:47:45.053Z"}
+{"level":"info","message":"Email service initialized successfully","timestamp":"2026-01-06T15:05:45.822Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2026-01-06T15:05:48.444Z"}
+{"level":"info","message":"MongoDB connection established","timestamp":"2026-01-06T15:05:48.449Z"}
+{"level":"info","message":"Server started on port 5000","timestamp":"2026-01-06T15:05:48.474Z"}
+{"level":"info","message":"Cleanup job started","timestamp":"2026-01-06T15:05:50.578Z"}

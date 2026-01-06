@@ -59,7 +59,7 @@ router.post('/register', async (req, res) => {
     if (user.email) {
         const emailTemplates = require('../lib/emailTemplates');
         const config = emailService.getEmailConfig();
-        const loginLink = `${config.frontendUrl}/login`;
+        const loginLink = `${config.frontendUrl}/auth/login`;
         
         emailService.sendEmailAsync({
             to: user.email,
@@ -254,7 +254,7 @@ router.post('/forgot-password', passwordResetLimiter, async (req, res) => {
         const emailTemplates = require('../lib/emailTemplates');
         const config = emailService.getEmailConfig();
         
-        const resetLink = `${config.frontendUrl}/reset-password?token=${resetToken}`;
+        const resetLink = `${config.frontendUrl}/auth/reset-password?token=${resetToken}`;
 
         try {
             await emailService.sendEmail({
