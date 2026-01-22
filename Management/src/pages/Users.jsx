@@ -44,8 +44,11 @@ const Users = () => {
             user.email?.toLowerCase().includes(searchTerm.toLowerCase());
 
         const matchesFilter = filterStatus === 'all' ||
-            (filterStatus === 'active' && user.phoneVerified) ||
-            (filterStatus === 'inactive' && !user.phoneVerified);
+            (filterStatus === 'active' && (user.phoneVerified || user.emailVerified)) ||
+            (filterStatus === 'verified' && user.phoneVerified && user.emailVerified) ||
+            (filterStatus === 'phone-verified' && user.phoneVerified && !user.emailVerified) ||
+            (filterStatus === 'email-verified' && user.emailVerified && !user.phoneVerified) ||
+            (filterStatus === 'inactive' && !user.phoneVerified && !user.emailVerified);
 
         return matchesSearch && matchesFilter;
     }) || [];
@@ -130,12 +133,47 @@ const Users = () => {
     };
 
     const getStatusBadge = (user) => {
-        if (user.phoneVerified) {
+        const phoneVerified = user.phoneVerified || false;
+        const emailVerified = user.emailVerified || false;
+        
+        if (phoneVerified && emailVerified) {
             return (
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                    <CheckCircle className="w-3 h-3 mr-1" />
-                    Verified
-                </span>
+                <div className="flex flex-col gap-1">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        <CheckCircle className="w-3 h-3 mr-1" />
+                        Phone ✓
+                    </span>
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        <CheckCircle className="w-3 h-3 mr-1" />
+                        Email ✓
+                    </span>
+                </div>
+            );
+        } else if (phoneVerified) {
+            return (
+                <div className="flex flex-col gap-1">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        <CheckCircle className="w-3 h-3 mr-1" />
+                        Phone ✓
+                    </span>
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                        <XCircle className="w-3 h-3 mr-1" />
+                        Email ✗
+                    </span>
+                </div>
+            );
+        } else if (emailVerified) {
+            return (
+                <div className="flex flex-col gap-1">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                        <XCircle className="w-3 h-3 mr-1" />
+                        Phone ✗
+                    </span>
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        <CheckCircle className="w-3 h-3 mr-1" />
+                        Email ✓
+                    </span>
+                </div>
             );
         } else {
             return (
@@ -194,7 +232,10 @@ const Users = () => {
                         className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
                         <option value="all">All Users</option>
-                        <option value="active">Verified</option>
+                        <option value="verified">Fully Verified (Phone + Email)</option>
+                        <option value="active">Partially Verified</option>
+                        <option value="phone-verified">Phone Verified Only</option>
+                        <option value="email-verified">Email Verified Only</option>
                         <option value="inactive">Unverified</option>
                     </select>
 

@@ -7,6 +7,7 @@ const logger = require('./utils/logger');
 const connectDB = require('./config/db');
 const routes = require('./routes');
 const { startCleanupJob } = require('./jobs/cleanup');
+const { startKeepAlive } = require('./jobs/keepAlive');
 
 const app = express();
 
@@ -60,6 +61,26 @@ app.options('*', (req, res) => {
 // routes
 app.use('/api', routes);
 
+// Keep-alive endpoint to prevent Render from sleeping
+app.get('/keep-alive', (req, res) => {
+  res.json({ 
+    ok: true, 
+    message: 'Server is alive', 
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  });
+});
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({
+    ok: true,
+    status: 'healthy',
+    database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+    timestamp: new Date().toISOString()
+  });
+});
+
 // basic health
 app.get('/', (req, res) => {
   res.json({
@@ -71,6 +92,16 @@ app.get('/', (req, res) => {
   });
 });
 
+// Keep-alive endpoint to prevent Render from sleeping
+app.get('/keep-alive', (req, res) => {
+  res.json({ 
+    ok: true, 
+    message: 'Server is alive', 
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  });
+});
+
 // Enhanced health check for monitoring
 app.get('/health', (req, res) => {
   res.json({
@@ -78,7 +109,8 @@ app.get('/health', (req, res) => {
     uptime: process.uptime(),
     memory: process.memoryUsage(),
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
+    environment: process.env.NODE_ENV || 'development',
+    database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
   });
 });
 
@@ -100,12 +132,14 @@ async function startServer() {
     app.listen(PORT, () => {
       logger.info(`Server started on port ${PORT}`);
 
-      // Start cleanup job only after database is connected
+      // Start jobs only after database is connected
       setTimeout(() => {
         if (mongoose.connection.readyState === 1) {
           startCleanupJob();
+          // Start keep-alive job to prevent Render from sleeping
+          startKeepAlive();
         } else {
-          logger.warn('Database not ready, skipping cleanup job startup');
+          logger.warn('Database not ready, skipping job startup');
         }
       }, 2000); // Wait 2 seconds for connection to stabilize
     });

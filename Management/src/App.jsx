@@ -12,6 +12,7 @@ import Vouchers from './pages/Vouchers'
 import Payments from './pages/Payments'
 import Logs from './pages/Logs'
 import Settings from './pages/Settings'
+import Ads from './pages/Ads'
 import Login from './pages/Login'
 import { AuthProvider } from './hooks/useAuth'
 
@@ -42,6 +43,7 @@ function App() {
                                 <Route path="packages" element={<Packages />} />
                                 <Route path="vouchers" element={<Vouchers />} />
                                 <Route path="payments" element={<Payments />} />
+                                <Route path="ads" element={<Ads />} />
                                 <Route path="logs" element={<Logs />} />
                                 <Route path="settings" element={<Settings />} />
                             </Route>

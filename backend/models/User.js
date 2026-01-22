@@ -8,6 +8,7 @@ const UserSchema = new mongoose.Schema({
   passwordHash: { type: String },
   role: { type: String, default: 'user', enum: ['user', 'admin'] }, // user role
   phoneVerified: { type: Boolean, default: false },
+  emailVerified: { type: Boolean, default: false }, // email verification status
   freeTrialUsed: { type: Boolean, default: false }, // free trial by phone
   points: { type: Number, default: 0 }, // user points balance
   referralCode: { type: String, unique: true, sparse: true }, // unique referral code
@@ -16,6 +17,9 @@ const UserSchema = new mongoose.Schema({
   // Password reset fields
   passwordResetToken: { type: String },
   passwordResetExpires: { type: Date },
+  // Email verification fields
+  emailVerificationToken: { type: String },
+  emailVerificationExpires: { type: Date },
   // Email preferences
   emailMarketingOptIn: { type: Boolean, default: true }, // Opt-in for marketing emails
   emailBlacklisted: { type: Boolean, default: false }, // User has unsubscribed
@@ -93,6 +97,45 @@ UserSchema.methods.verifyPasswordResetToken = async function (token) {
 UserSchema.methods.clearPasswordResetToken = function () {
   this.passwordResetToken = undefined;
   this.passwordResetExpires = undefined;
+};
+
+// helper to generate email verification token
+UserSchema.methods.generateEmailVerificationToken = function () {
+  const crypto = require('crypto');
+  const verificationToken = crypto.randomBytes(32).toString('hex');
+  
+  // Hash the token before saving
+  const bcrypt = require('bcryptjs');
+  this.emailVerificationToken = bcrypt.hashSync(verificationToken, 10);
+  this.emailVerificationExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
+  
+  return verificationToken;
+};
+
+// helper to verify email verification token
+UserSchema.methods.verifyEmailVerificationToken = async function (token) {
+  if (!this.emailVerificationToken || !this.emailVerificationExpires) {
+    return false;
+  }
+  
+  if (Date.now() > this.emailVerificationExpires) {
+    return false;
+  }
+  
+  const bcrypt = require('bcryptjs');
+  return bcrypt.compareSync(token, this.emailVerificationToken);
+};
+
+// helper to clear email verification token
+UserSchema.methods.clearEmailVerificationToken = function () {
+  this.emailVerificationToken = undefined;
+  this.emailVerificationExpires = undefined;
+};
+
+// helper to mark email as verified
+UserSchema.methods.markEmailAsVerified = function () {
+  this.emailVerified = true;
+  this.clearEmailVerificationToken();
 };
 
 module.exports = mongoose.model('User', UserSchema);

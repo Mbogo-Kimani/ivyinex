@@ -74,12 +74,25 @@ export const useAuth = () => {
 
         try {
             await authService.logout();
-        } catch (err) {
-            console.error('Logout error:', err);
-        } finally {
+            // Clear all localStorage items related to auth
+            localStorage.removeItem('admin_token');
+            localStorage.removeItem('admin_user');
+            // Clear state
             setUser(null);
             setIsAuthenticated(false);
             setError(null);
+            // Redirect to login page
+            window.location.href = '/login';
+        } catch (err) {
+            console.error('Logout error:', err);
+            // Even if logout fails, clear state and redirect
+            localStorage.removeItem('admin_token');
+            localStorage.removeItem('admin_user');
+            setUser(null);
+            setIsAuthenticated(false);
+            setError(null);
+            window.location.href = '/login';
+        } finally {
             setLoading(false);
         }
     }, []);

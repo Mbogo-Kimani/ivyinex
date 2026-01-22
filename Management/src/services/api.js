@@ -30,13 +30,15 @@ api.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response?.status === 401 || error.response?.status === 403) {
-            // Unauthorized or Forbidden - clear token and redirect to login
+            // Unauthorized or Forbidden - clear all auth data
             localStorage.removeItem('admin_token');
             localStorage.removeItem('admin_user');
+            sessionStorage.clear(); // Clear session storage as well
             
             // Only redirect if not already on login page
             if (window.location.pathname !== '/login') {
-                window.location.href = '/login';
+                // Use replace to prevent back button issues
+                window.location.replace('/login');
             }
         }
         return Promise.reject(error);
@@ -315,6 +317,37 @@ export const apiMethods = {
 
     changeAdminPassword: async (adminId, password) => {
         const response = await api.put(apiEndpoints.admins.changePassword(adminId), { password });
+        return response.data;
+    },
+
+    // Ads
+    getAds: async (params = {}) => {
+        const response = await api.get('/api/ads/admin/list', { params });
+        return response.data;
+    },
+
+    getAd: async (id) => {
+        const response = await api.get(`/api/ads/${id}`);
+        return response.data;
+    },
+
+    createAd: async (data) => {
+        const response = await api.post('/api/ads/admin/create', data);
+        return response.data;
+    },
+
+    updateAd: async (id, data) => {
+        const response = await api.put(`/api/ads/admin/${id}`, data);
+        return response.data;
+    },
+
+    deleteAd: async (id) => {
+        const response = await api.delete(`/api/ads/admin/${id}`);
+        return response.data;
+    },
+
+    getAdStats: async () => {
+        const response = await api.get('/api/ads/admin/stats');
         return response.data;
     },
 };

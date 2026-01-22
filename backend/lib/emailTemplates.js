@@ -218,11 +218,59 @@ function getPasswordChangedTemplate(userName) {
     return getBaseTemplate(content);
 }
 
+/**
+ * Email Verification Template
+ */
+function getEmailVerificationTemplate(userName, verificationLink, expiryHours = 24) {
+    const content = `
+        <div style="color: #333333;">
+            <h2 style="margin: 0 0 20px 0; color: #333333; font-size: 24px; font-weight: 600;">
+                Verify Your Email Address
+            </h2>
+            
+            <p style="margin: 0 0 20px 0; color: #666666; font-size: 16px; line-height: 1.6;">
+                Hello ${userName || 'there'},
+            </p>
+            
+            <p style="margin: 0 0 20px 0; color: #666666; font-size: 16px; line-height: 1.6;">
+                Thank you for registering with Wifi Mtaani! Please verify your email address by clicking the button below:
+            </p>
+            
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="${verificationLink}" 
+                   style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px;">
+                    Verify Email Address
+                </a>
+            </div>
+            
+            <p style="margin: 20px 0 0 0; color: #666666; font-size: 14px; line-height: 1.6;">
+                Or copy and paste this link into your browser:
+            </p>
+            <p style="margin: 10px 0 20px 0; color: #667eea; font-size: 14px; word-break: break-all;">
+                ${verificationLink}
+            </p>
+            
+            <div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 4px;">
+                <p style="margin: 0; color: #856404; font-size: 14px; line-height: 1.6;">
+                    <strong>⏰ Important:</strong> This verification link will expire in ${expiryHours} hour${expiryHours > 1 ? 's' : ''}. If you didn't create an account, please ignore this email.
+                </p>
+            </div>
+            
+            <p style="margin: 20px 0 0 0; color: #666666; font-size: 14px; line-height: 1.6;">
+                Once verified, you'll be able to reset your password and receive important account notifications via email.
+            </p>
+        </div>
+    `;
+    
+    return getBaseTemplate(content);
+}
+
 module.exports = {
     getPasswordResetTemplate,
     getWelcomeTemplate,
     getMarketingTemplate,
     getPasswordChangedTemplate,
+    getEmailVerificationTemplate,
     getBaseTemplate,
 };
 

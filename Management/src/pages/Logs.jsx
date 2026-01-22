@@ -187,10 +187,10 @@ const Logs = () => {
         <div className="space-y-6">
             {/* Header */}
             <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                    <FileText className="h-8 w-8 text-blue-600 mr-3" />
+            <div className="flex items-center">
+                <FileText className="h-8 w-8 text-blue-600 mr-3" />
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900">Logs</h1>
+                <h1 className="text-2xl font-bold text-gray-900">Logs</h1>
                         <p className="text-sm text-gray-500">
                             View system logs and activity history
                         </p>

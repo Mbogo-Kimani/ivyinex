@@ -11,5 +11,6 @@ router.use('/admin', require('./admin'));
 router.use('/mikrotik', require('./mikrotik'));
 router.use('/points', require('./points'));
 router.use('/email', require('./email'));
+router.use('/ads', require('./ads'));
 
 module.exports = router;

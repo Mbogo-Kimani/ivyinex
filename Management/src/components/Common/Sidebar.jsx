@@ -11,6 +11,7 @@ import {
     DollarSign,
     FileText,
     Settings,
+    Megaphone,
     X,
     ChevronDown,
     ChevronRight
@@ -70,6 +71,13 @@ const Sidebar = ({ isOpen, onClose }) => {
             icon: DollarSign,
             current: location.pathname.startsWith('/payments'),
             permission: 'payments.read',
+        },
+        {
+            name: 'Ads & Promos',
+            href: '/ads',
+            icon: Megaphone,
+            current: location.pathname.startsWith('/ads'),
+            permission: 'admin',
         },
         {
             name: 'Logs',

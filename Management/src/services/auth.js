@@ -50,11 +50,12 @@ class AuthService {
 
     // Logout user
     async logout() {
-        // Clear local storage
+        // Clear all auth data
         this.token = null;
         this.user = null;
         localStorage.removeItem('admin_token');
         localStorage.removeItem('admin_user');
+        sessionStorage.clear(); // Clear session storage as well
     }
 
     // Refresh token

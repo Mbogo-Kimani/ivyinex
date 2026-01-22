@@ -369,8 +369,8 @@ router.post('/daraja-callback', async (req, res) => {
       // Note: We'll update payment status to 'success' only after subscription is created
       let sub = null;
       try {
-        const now = new Date();
-        const endAt = new Date(now.getTime() + pkg.durationSeconds * 1000);
+      const now = new Date();
+      const endAt = new Date(now.getTime() + pkg.durationSeconds * 1000);
         sub = await Subscription.create({
           userId: payment.userId || null,
           packageKey: pkg.key,
@@ -451,7 +451,7 @@ router.post('/daraja-callback', async (req, res) => {
             until: endAt,
             grantedAt: new Date()
           };
-          await sub.save();
+        await sub.save();
           await LogModel.create({
             level: 'info',
             source: 'mikrotik',

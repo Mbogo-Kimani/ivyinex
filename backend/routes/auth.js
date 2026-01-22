@@ -21,84 +21,181 @@ function normalizePhoneInput(phone) {
 
 // Register: create user entry and send OTP for phone verification
 router.post('/register', async (req, res) => {
-    const { name, phone, email, password, mac } = req.body;
-    if (!phone || !password) return res.status(400).json({ error: 'phone and password required' });
-
-    const normalizedPhone = normalizePhoneInput(phone);
-
-    let user = await User.findOne({ phone: normalizedPhone });
-    if (user) return res.status(400).json({ error: 'phone already registered' });
-
-    user = new User({ name, phone: normalizedPhone, email: email?.toLowerCase().trim() });
-    await user.setPassword(password);
-    await user.save();
-
-    // Add user to Brevo contact list if email provided and marketing opt-in
-    if (user.email && user.emailMarketingOptIn) {
-        const brevoListId = process.env.BREVO_LIST_ID ? parseInt(process.env.BREVO_LIST_ID) : null;
-        emailService.addContactToBrevo(
-            user.email,
-            {
-                FIRSTNAME: user.name || '',
-                PHONE: user.phone || '',
-                SMS: user.phone || '',
-            },
-            brevoListId ? [brevoListId] : [],
-            false
-        ).then(result => {
-            if (result.success && result.id) {
-                user.brevoContactId = result.id;
-                user.save().catch(err => logger.error('Failed to save Brevo contact ID', { error: err.message }));
-            }
-        }).catch(err => {
-            logger.error('Failed to add user to Brevo', { error: err.message, userId: user._id });
-        });
-    }
-
-    // Send welcome email if email provided
-    if (user.email) {
-        const emailTemplates = require('../lib/emailTemplates');
-        const config = emailService.getEmailConfig();
-        const loginLink = `${config.frontendUrl}/auth/login`;
+    try {
+        const { name, phone, email, password, mac } = req.body;
         
-        emailService.sendEmailAsync({
-            to: user.email,
-            toName: user.name || user.email,
-            subject: 'Welcome to Wifi Mtaani! 🎉',
-            htmlContent: emailTemplates.getWelcomeTemplate(user.name || 'User', loginLink),
-        });
-    }
+        // Validate required fields
+        if (!phone || !password) {
+            return res.status(400).json({ error: 'phone and password required' });
+        }
 
-    // If MAC address provided, link existing device to this user
-    if (mac) {
-        const Device = require('../models/Device');
-        const device = await Device.findOne({ mac });
-        if (device && !device.userId) {
-            device.userId = user._id;
-            await device.save();
-            await LogModel.create({
-                level: 'info',
-                source: 'auth',
-                message: 'device-linked-during-registration',
-                metadata: { phone: normalizedPhone, userId: user._id, mac, deviceId: device._id }
+        // Validate password length
+        if (password.length < 6) {
+            return res.status(400).json({ error: 'Password must be at least 6 characters' });
+        }
+
+        const normalizedPhone = normalizePhoneInput(phone);
+        
+        // Check if phone already exists
+        let user = await User.findOne({ phone: normalizedPhone });
+        if (user) {
+            return res.status(400).json({ error: 'phone already registered' });
+        }
+
+        // Normalize email: convert empty strings to undefined, trim and lowercase if provided
+        let normalizedEmail = undefined;
+        if (email && typeof email === 'string') {
+            const trimmedEmail = email.trim();
+            if (trimmedEmail.length > 0) {
+                normalizedEmail = trimmedEmail.toLowerCase();
+            }
+        }
+
+        // Check if email already exists (if email is provided)
+        if (normalizedEmail) {
+            const existingEmailUser = await User.findOne({ email: normalizedEmail });
+            if (existingEmailUser) {
+                return res.status(400).json({ error: 'Email already registered' });
+            }
+        }
+
+        // Create new user
+        user = new User({ 
+            name: name?.trim() || undefined, 
+            phone: normalizedPhone, 
+            email: normalizedEmail 
+        });
+        
+        await user.setPassword(password);
+        await user.save();
+
+        // Add user to Brevo contact list if email provided and marketing opt-in
+        if (user.email && user.emailMarketingOptIn) {
+            const brevoListId = process.env.BREVO_LIST_ID ? parseInt(process.env.BREVO_LIST_ID) : null;
+            emailService.addContactToBrevo(
+                user.email,
+                {
+                    FIRSTNAME: user.name || '',
+                    PHONE: user.phone || '',
+                    SMS: user.phone || '',
+                },
+                brevoListId ? [brevoListId] : [],
+                false
+            ).then(result => {
+                if (result.success && result.id) {
+                    user.brevoContactId = result.id;
+                    user.save().catch(err => logger.error('Failed to save Brevo contact ID', { error: err.message }));
+                }
+            }).catch(err => {
+                logger.error('Failed to add user to Brevo', { error: err.message, userId: user._id });
             });
         }
+
+        // Send email verification email if email provided
+        if (user.email) {
+            try {
+                const emailTemplates = require('../lib/emailTemplates');
+                const config = emailService.getEmailConfig();
+                
+                // Generate email verification token
+                const verificationToken = user.generateEmailVerificationToken();
+                await user.save();
+                
+                const verificationLink = `${config.frontendUrl}/auth/verify-email?token=${verificationToken}`;
+                
+                emailService.sendEmailAsync({
+                    to: user.email,
+                    toName: user.name || user.email,
+                    subject: 'Verify Your Email Address - Wifi Mtaani',
+                    htmlContent: emailTemplates.getEmailVerificationTemplate(user.name || 'User', verificationLink, 24),
+                }).catch(err => {
+                    logger.error('Failed to send email verification email', { error: err.message, userId: user._id, email: user.email });
+                });
+            } catch (emailError) {
+                logger.error('Error preparing email verification email', { error: emailError.message, userId: user._id });
+                // Don't fail registration if email fails
+            }
+        }
+
+        // If MAC address provided, link existing device to this user
+        if (mac) {
+            try {
+                const Device = require('../models/Device');
+                const device = await Device.findOne({ mac });
+                if (device && !device.userId) {
+                    device.userId = user._id;
+                    await device.save();
+                    await LogModel.create({
+                        level: 'info',
+                        source: 'auth',
+                        message: 'device-linked-during-registration',
+                        metadata: { phone: normalizedPhone, userId: user._id, mac, deviceId: device._id }
+                    });
+                }
+            } catch (deviceError) {
+                logger.error('Failed to link device during registration', { error: deviceError.message, mac, userId: user._id });
+                // Don't fail registration if device linking fails
+            }
+        }
+
+        await LogModel.create({ 
+            level: 'info', 
+            source: 'auth', 
+            message: 'user-registered', 
+            metadata: { phone: normalizedPhone, userId: user._id, email: user.email || null } 
+        });
+        
+        const code = await otp.createAndSend(normalizedPhone);
+
+        // For now, skip OTP verification and directly issue JWT (for development)
+        // In production, you should require OTP verification
+        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRY || '7d' });
+
+        res.json({
+            ok: true,
+            message: 'registered successfully',
+            token,
+            user: { 
+                _id: user._id, 
+                phone: user.phone, 
+                name: user.name, 
+                email: user.email,
+                emailVerified: user.emailVerified || false,
+                phoneVerified: user.phoneVerified || false,
+                freeTrialUsed: user.freeTrialUsed, 
+                createdAt: user.createdAt 
+            },
+            codeSent: !!code
+        });
+    } catch (error) {
+        logger.error('Registration error', { 
+            error: error.message, 
+            stack: error.stack,
+            phone: req.body?.phone,
+            email: req.body?.email 
+        });
+
+        // Handle duplicate key errors (MongoDB error code 11000)
+        if (error.code === 11000) {
+            const field = Object.keys(error.keyPattern || {})[0] || 'field';
+            return res.status(400).json({ 
+                error: `${field === 'phone' ? 'Phone' : 'Email'} already registered` 
+            });
+        }
+
+        // Handle validation errors
+        if (error.name === 'ValidationError') {
+            const messages = Object.values(error.errors || {}).map(e => e.message);
+            return res.status(400).json({ 
+                error: messages.length > 0 ? messages[0] : 'Validation error' 
+            });
+        }
+
+        // Generic error response
+        res.status(500).json({ 
+            error: 'Registration failed. Please try again later.' 
+        });
     }
-
-    await LogModel.create({ level: 'info', source: 'auth', message: 'user-registered', metadata: { phone: normalizedPhone, userId: user._id } });
-    const code = await otp.createAndSend(normalizedPhone);
-
-    // For now, skip OTP verification and directly issue JWT (for development)
-    // In production, you should require OTP verification
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRY || '7d' });
-
-    res.json({
-        ok: true,
-        message: 'registered successfully',
-        token,
-        user: { _id: user._id, phone: user.phone, name: user.name, email: user.email, freeTrialUsed: user.freeTrialUsed, createdAt: user.createdAt },
-        codeSent: !!code
-    });
 });
 
 // Verify OTP
@@ -128,7 +225,20 @@ router.post('/login', async (req, res) => {
     const ok = await user.comparePassword(password);
     if (!ok) return res.status(401).json({ error: 'Wrong password' });
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRY || '7d' });
-    res.json({ ok: true, token, user: { _id: user._id, phone: user.phone, name: user.name, email: user.email, freeTrialUsed: user.freeTrialUsed, createdAt: user.createdAt } });
+    res.json({ 
+        ok: true, 
+        token, 
+        user: { 
+            _id: user._id, 
+            phone: user.phone, 
+            name: user.name, 
+            email: user.email,
+            emailVerified: user.emailVerified || false,
+            phoneVerified: user.phoneVerified || false,
+            freeTrialUsed: user.freeTrialUsed, 
+            createdAt: user.createdAt 
+        } 
+    });
 });
 
 // Get current user (protected route)
@@ -141,7 +251,19 @@ router.get('/me', async (req, res) => {
         const user = await User.findById(decoded.userId).select('-passwordHash');
         if (!user) return res.status(404).json({ error: 'User not found' });
 
-        res.json({ ok: true, user: { _id: user._id, phone: user.phone, name: user.name, email: user.email, freeTrialUsed: user.freeTrialUsed, createdAt: user.createdAt } });
+        res.json({ 
+            ok: true, 
+            user: { 
+                _id: user._id, 
+                phone: user.phone, 
+                name: user.name, 
+                email: user.email,
+                emailVerified: user.emailVerified || false,
+                phoneVerified: user.phoneVerified || false,
+                freeTrialUsed: user.freeTrialUsed, 
+                createdAt: user.createdAt 
+            } 
+        });
     } catch (error) {
         res.status(401).json({ error: 'Invalid token' });
     }
@@ -164,7 +286,19 @@ router.put('/profile', async (req, res) => {
 
         await user.save();
 
-        res.json({ ok: true, user: { _id: user._id, phone: user.phone, name: user.name, email: user.email, freeTrialUsed: user.freeTrialUsed, createdAt: user.createdAt } });
+        res.json({ 
+            ok: true, 
+            user: { 
+                _id: user._id, 
+                phone: user.phone, 
+                name: user.name, 
+                email: user.email,
+                emailVerified: user.emailVerified || false,
+                phoneVerified: user.phoneVerified || false,
+                freeTrialUsed: user.freeTrialUsed, 
+                createdAt: user.createdAt 
+            } 
+        });
     } catch (error) {
         res.status(500).json({ error: 'Failed to update profile' });
     }
@@ -363,6 +497,174 @@ router.post('/reset-password', passwordResetLimiter, async (req, res) => {
         });
     } catch (error) {
         logger.error('Reset password error', { error: error.message, stack: error.stack });
+        res.status(500).json({ error: 'An error occurred. Please try again later.' });
+    }
+});
+
+// Verify email address
+router.post('/verify-email', async (req, res) => {
+    try {
+        const { token } = req.body;
+
+        if (!token) {
+            return res.status(400).json({ error: 'Verification token is required' });
+        }
+
+        // Find user with matching verification token
+        const users = await User.find({
+            emailVerificationExpires: { $gt: Date.now() },
+            emailVerified: false
+        });
+
+        let user = null;
+        for (const u of users) {
+            const isValid = await u.verifyEmailVerificationToken(token);
+            if (isValid) {
+                user = u;
+                break;
+            }
+        }
+
+        if (!user) {
+            return res.status(400).json({
+                error: 'Invalid or expired verification token. Please request a new verification email.',
+            });
+        }
+
+        // Mark email as verified
+        user.markEmailAsVerified();
+        await user.save();
+
+        // Send welcome email after verification
+        if (user.email) {
+            try {
+                const emailTemplates = require('../lib/emailTemplates');
+                const config = emailService.getEmailConfig();
+                const loginLink = `${config.frontendUrl}/auth/login`;
+                
+                emailService.sendEmailAsync({
+                    to: user.email,
+                    toName: user.name || user.email,
+                    subject: 'Welcome to Wifi Mtaani! 🎉',
+                    htmlContent: emailTemplates.getWelcomeTemplate(user.name || 'User', loginLink),
+                }).catch(err => {
+                    logger.error('Failed to send welcome email after verification', { error: err.message, userId: user._id });
+                });
+            } catch (emailError) {
+                logger.error('Error sending welcome email after verification', { error: emailError.message, userId: user._id });
+            }
+        }
+
+        await LogModel.create({
+            level: 'info',
+            source: 'auth',
+            message: 'email-verified',
+            metadata: { userId: user._id, email: user.email },
+        });
+
+        res.json({
+            ok: true,
+            message: 'Email verified successfully!',
+            user: {
+                _id: user._id,
+                phone: user.phone,
+                name: user.name,
+                email: user.email,
+                emailVerified: user.emailVerified,
+                freeTrialUsed: user.freeTrialUsed,
+                createdAt: user.createdAt
+            }
+        });
+    } catch (error) {
+        logger.error('Verify email error', { error: error.message, stack: error.stack });
+        res.status(500).json({ error: 'An error occurred. Please try again later.' });
+    }
+});
+
+// Resend email verification
+router.post('/resend-verification', async (req, res) => {
+    try {
+        const { email, phone } = req.body;
+
+        // Allow resend by email or phone
+        let user;
+        if (email) {
+            user = await User.findOne({ email: email.toLowerCase().trim() });
+        } else if (phone) {
+            const normalizedPhone = normalizePhoneInput(phone);
+            user = await User.findOne({ phone: normalizedPhone });
+        } else {
+            return res.status(400).json({ error: 'Email or phone number is required' });
+        }
+
+        // Don't reveal if user exists (security best practice)
+        if (!user) {
+            return res.json({
+                ok: true,
+                message: 'If an account with that email/phone exists and is unverified, a verification email has been sent.',
+            });
+        }
+
+        // Check if email is already verified
+        if (user.emailVerified) {
+            return res.json({
+                ok: true,
+                message: 'Email is already verified.',
+            });
+        }
+
+        // Check if user has an email
+        if (!user.email) {
+            return res.status(400).json({
+                error: 'No email address associated with this account.',
+            });
+        }
+
+        // Generate new verification token
+        const verificationToken = user.generateEmailVerificationToken();
+        await user.save();
+
+        // Send verification email
+        const emailTemplates = require('../lib/emailTemplates');
+        const config = emailService.getEmailConfig();
+        const verificationLink = `${config.frontendUrl}/auth/verify-email?token=${verificationToken}`;
+
+        try {
+            await emailService.sendEmail({
+                to: user.email,
+                toName: user.name || user.email,
+                subject: 'Verify Your Email Address - Wifi Mtaani',
+                htmlContent: emailTemplates.getEmailVerificationTemplate(user.name || 'User', verificationLink, 24),
+            });
+
+            await LogModel.create({
+                level: 'info',
+                source: 'auth',
+                message: 'verification-email-resent',
+                metadata: { userId: user._id, email: user.email },
+            });
+
+            res.json({
+                ok: true,
+                message: 'If an account with that email/phone exists and is unverified, a verification email has been sent.',
+            });
+        } catch (emailError) {
+            logger.error('Failed to send verification email', {
+                userId: user._id,
+                email: user.email,
+                error: emailError.message,
+            });
+
+            // Clear the token if email failed
+            user.clearEmailVerificationToken();
+            await user.save();
+
+            return res.status(500).json({
+                error: 'Failed to send verification email. Please try again later or contact support.',
+            });
+        }
+    } catch (error) {
+        logger.error('Resend verification error', { error: error.message, stack: error.stack });
         res.status(500).json({ error: 'An error occurred. Please try again later.' });
     }
 });

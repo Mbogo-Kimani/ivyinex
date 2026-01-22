@@ -24,6 +24,7 @@ const UserDetails = ({ user, onClose, onSave }) => {
         phone: user?.phone || '',
         password: '',
         phoneVerified: user?.phoneVerified || false,
+        emailVerified: user?.emailVerified || false,
         points: user?.points || 0,
     });
 
@@ -39,6 +40,7 @@ const UserDetails = ({ user, onClose, onSave }) => {
             phone: user?.phone || '',
             password: '',
             phoneVerified: user?.phoneVerified || false,
+            emailVerified: user?.emailVerified || false,
             points: user?.points || 0,
         });
         if (isNewUser) {
@@ -178,19 +180,36 @@ const UserDetails = ({ user, onClose, onSave }) => {
                             )}
 
                             <div>
-                                <label className="text-sm font-medium text-gray-500">Status</label>
-                                <div className="mt-1">
-                                    {user.phoneVerified ? (
-                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                            <CheckCircle className="w-3 h-3 mr-1" />
-                                            Verified
-                                        </span>
-                                    ) : (
-                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                            <XCircle className="w-3 h-3 mr-1" />
-                                            Unverified
-                                        </span>
-                                    )}
+                                <label className="text-sm font-medium text-gray-500">Verification Status</label>
+                                <div className="mt-1 space-y-2">
+                                    <div>
+                                        <span className="text-xs text-gray-500">Phone: </span>
+                                        {user.phoneVerified ? (
+                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                <CheckCircle className="w-3 h-3 mr-1" />
+                                                Verified
+                                            </span>
+                                        ) : (
+                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                <XCircle className="w-3 h-3 mr-1" />
+                                                Unverified
+                                            </span>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <span className="text-xs text-gray-500">Email: </span>
+                                        {user.emailVerified ? (
+                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                <CheckCircle className="w-3 h-3 mr-1" />
+                                                Verified
+                                            </span>
+                                        ) : (
+                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                <XCircle className="w-3 h-3 mr-1" />
+                                                Unverified
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </div>

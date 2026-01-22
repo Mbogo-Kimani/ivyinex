@@ -9,73 +9,59 @@ export default function Ads() {
     const [loading, setLoading] = useState(true);
     const [autoReconnected, setAutoReconnected] = useState(false);
 
+    const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'https://ivyinex.onrender.com';
+
     useEffect(() => {
         // Check for auto-reconnection parameter
         if (router.query['auto-reconnected'] === 'true') {
             setAutoReconnected(true);
         }
 
-        // Simulate loading ads from API
-        setTimeout(() => {
-            setAds([
-                {
-                    id: 1,
-                    title: 'Back-to-School Special',
-                    content: 'Get 20% off on all 7-day packages! Perfect for students returning to school.',
-                    type: 'promo',
-                    cta: 'Get Discount',
-                    image: '🎓',
-                    featured: true
-                },
-                {
-                    id: 2,
-                    title: 'Mary\'s Refreshments',
-                    content: 'Buy any drink from Mary\'s Stall and get a free 30-minute voucher! Located near the main gate.',
-                    type: 'partner',
-                    cta: 'Visit Stall',
-                    image: '🥤',
-                    featured: false
-                },
-                {
-                    id: 3,
-                    title: 'Community Cleanup',
-                    content: 'Join us this Saturday for our monthly community cleanup. Free internet for all volunteers!',
-                    type: 'community',
-                    cta: 'Join Event',
-                    image: '🌱',
-                    featured: false
-                },
-                {
-                    id: 4,
-                    title: 'Local Business Directory',
-                    content: 'Discover local businesses in our area. Many offer special discounts for Wifi Mtaani users!',
-                    type: 'directory',
-                    cta: 'Browse Directory',
-                    image: '🏪',
-                    featured: false
-                },
-                {
-                    id: 5,
-                    title: 'Tech Support Available',
-                    content: 'Having connection issues? Our tech support team is available 24/7. Contact us for help!',
-                    type: 'support',
-                    cta: 'Get Help',
-                    image: '🔧',
-                    featured: false
-                },
-                {
-                    id: 6,
-                    title: 'Referral Program',
-                    content: 'Refer a friend and both of you get 1 hour of free internet! Share your referral code with friends.',
-                    type: 'referral',
-                    cta: 'Share Code',
-                    image: '👥',
-                    featured: true
-                }
-            ]);
-            setLoading(false);
-        }, 1000);
+        // Fetch ads from API
+        fetchAds();
     }, []);
+
+    const fetchAds = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch(`${BACKEND_URL}/api/ads`);
+            const data = await response.json();
+            
+            if (data.ok && data.ads) {
+                // Filter active ads
+                const now = new Date();
+                const activeAds = data.ads.filter(ad => {
+                    if (!ad.active) return false;
+                    if (ad.startDate && new Date(ad.startDate) > now) return false;
+                    if (ad.endDate && new Date(ad.endDate) < now) return false;
+                    return true;
+                });
+                setAds(activeAds);
+            }
+        } catch (error) {
+            console.error('Failed to fetch ads:', error);
+            // Fallback to empty array on error
+            setAds([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleAdClick = async (ad) => {
+        // Track click
+        try {
+            await fetch(`${BACKEND_URL}/api/ads/${ad._id}/click`, {
+                method: 'POST'
+            });
+        } catch (error) {
+            console.error('Failed to track ad click:', error);
+        }
+
+        // Open link if available
+        if (ad.link) {
+            window.open(ad.link, '_blank', 'noopener,noreferrer');
+        }
+    };
 
     const featuredAds = ads.filter(ad => ad.featured);
     const regularAds = ads.filter(ad => !ad.featured);
@@ -123,14 +109,18 @@ export default function Ads() {
                             <h2 style={{ marginBottom: 16, color: 'var(--wifi-mtaani-accent)', fontWeight: 600 }}>🔥 Featured Promotions</h2>
                             <div style={{ display: 'grid', gap: 16, gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
                                 {featuredAds.map(ad => (
-                                    <div key={ad.id} style={{
+                                    <div 
+                                        key={ad._id || ad.id} 
+                                        onClick={() => handleAdClick(ad)}
+                                        style={{
                                         background: 'var(--wifi-mtaani-panel)',
                                         padding: 20,
                                         borderRadius: 12,
                                         boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
                                         border: '2px solid var(--wifi-mtaani-accent)',
                                         position: 'relative',
-                                        color: 'white'
+                                        color: 'white',
+                                        cursor: ad.link ? 'pointer' : 'default'
                                     }}>
                                         <div style={{
                                             position: 'absolute',
@@ -156,16 +146,23 @@ export default function Ads() {
                                                 justifyContent: 'center',
                                                 background: 'var(--brand-1)',
                                                 borderRadius: 12,
-                                                color: 'white'
+                                                color: 'white',
+                                                overflow: 'hidden'
                                             }}>
-                                                {ad.image}
+                                                {ad.imageUrl ? (
+                                                    <img src={ad.imageUrl} alt={ad.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                ) : (
+                                                    ad.image || '📢'
+                                                )}
                                             </div>
                                             <h3 style={{ margin: 0, color: 'var(--wifi-mtaani-accent)', fontWeight: 600 }}>{ad.title}</h3>
                                         </div>
                                         <p style={{ marginBottom: 16, color: 'rgba(255, 255, 255, 0.8)', lineHeight: 1.5 }}>{ad.content}</p>
-                                        <button className="btn" style={{ width: '100%' }}>
-                                            {ad.cta}
+                                        {ad.link && (
+                                        <button className="btn" style={{ width: '100%' }} onClick={(e) => { e.stopPropagation(); handleAdClick(ad); }}>
+                                            {ad.cta || 'Learn More'}
                                         </button>
+                                        )}
                                     </div>
                                 ))}
                             </div>
@@ -183,14 +180,18 @@ export default function Ads() {
                         ) : (
                             <div style={{ display: 'grid', gap: 16, gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
                                 {regularAds.map(ad => (
-                                    <div key={ad.id} style={{
+                                    <div 
+                                        key={ad._id || ad.id} 
+                                        onClick={() => handleAdClick(ad)}
+                                        style={{
                                         background: 'var(--wifi-mtaani-panel)',
                                         padding: 20,
                                         borderRadius: 12,
                                         boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
                                         border: '1px solid rgba(47, 231, 245, 0.2)',
                                         transition: 'transform 0.2s, box-shadow 0.2s',
-                                        color: 'white'
+                                        color: 'white',
+                                        cursor: ad.link ? 'pointer' : 'default'
                                     }}
                                         onMouseEnter={(e) => {
                                             e.currentTarget.style.transform = 'translateY(-2px)';
@@ -216,14 +217,20 @@ export default function Ads() {
                                                 borderRadius: 8,
                                                 color: 'white'
                                             }}>
-                                                {ad.image}
+                                                {ad.imageUrl ? (
+                                                    <img src={ad.imageUrl} alt={ad.title} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 8 }} />
+                                                ) : (
+                                                    ad.image || '📢'
+                                                )}
                                             </div>
                                             <h3 style={{ margin: 0, color: 'var(--wifi-mtaani-accent)', fontSize: 16, fontWeight: 600 }}>{ad.title}</h3>
                                         </div>
                                         <p style={{ marginBottom: 16, color: 'rgba(255, 255, 255, 0.8)', lineHeight: 1.5, fontSize: 14 }}>{ad.content}</p>
-                                        <button className="btn ghost" style={{ width: '100%', fontSize: 14 }}>
-                                            {ad.cta}
+                                        {ad.link && (
+                                        <button className="btn ghost" style={{ width: '100%', fontSize: 14 }} onClick={(e) => { e.stopPropagation(); handleAdClick(ad); }}>
+                                            {ad.cta || 'Learn More'}
                                         </button>
+                                        )}
                                     </div>
                                 ))}
                             </div>
