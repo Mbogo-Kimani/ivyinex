@@ -26,4 +26,31 @@ router.post('/visit', async (req, res) => {
     }
 });
 
+// GET /api/analytics/stats - Get analytics stats/summary
+router.get('/stats', async (req, res) => {
+    try {
+        const totalVisits = await Visit.countDocuments();
+        const uniqueVisitors = await Visit.distinct('ip').then(ips => ips.length);
+
+        // aggregate visits by last 7 days
+        const last7Days = await Visit.aggregate([
+            { $match: { timestamp: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } } },
+            { $group: { _id: { $dateToString: { format: "%Y-%m-%d", date: "$timestamp" } }, count: { $sum: 1 } } },
+            { $sort: { _id: 1 } }
+        ]);
+
+        res.json({
+            ok: true,
+            stats: {
+                totalVisits,
+                uniqueVisitors,
+                last7Days
+            }
+        });
+    } catch (error) {
+        logger.error('Failed to get analytics stats', { error: error.message });
+        res.status(500).json({ error: 'Failed to get stats' });
+    }
+});
+
 module.exports = router;
