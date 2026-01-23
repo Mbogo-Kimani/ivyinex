@@ -18,7 +18,8 @@ const corsOptions = {
     if (!origin) return callback(null, true);
 
     const allowedOrigins = [
-      'https://ivynex.vercel.app',
+      'https://wifi-mtaani.vercel.app',
+      'https://ecowifi-management.vercel.app',
       'https://ivynex.vercel.app',
       'http://localhost:3000',
       'http://localhost:3001',
@@ -63,9 +64,9 @@ app.use('/api', routes);
 
 // Keep-alive endpoint to prevent Render from sleeping
 app.get('/keep-alive', (req, res) => {
-  res.json({ 
-    ok: true, 
-    message: 'Server is alive', 
+  res.json({
+    ok: true,
+    message: 'Server is alive',
     timestamp: new Date().toISOString(),
     uptime: process.uptime()
   });
@@ -94,9 +95,9 @@ app.get('/', (req, res) => {
 
 // Keep-alive endpoint to prevent Render from sleeping
 app.get('/keep-alive', (req, res) => {
-  res.json({ 
-    ok: true, 
-    message: 'Server is alive', 
+  res.json({
+    ok: true,
+    message: 'Server is alive',
     timestamp: new Date().toISOString(),
     uptime: process.uptime()
   });
