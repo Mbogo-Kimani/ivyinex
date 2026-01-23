@@ -50,6 +50,22 @@ export default function Ads() {
             setAds([]);
         } finally {
             setLoading(false);
+
+            // Track views for all active ads
+            if (activeAds.length > 0) {
+                try {
+                    const adIds = activeAds.map(ad => ad._id);
+                    fetch(`${BACKEND_URL}/api/ads/views`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ adIds })
+                    }).catch(err => console.error('Background view tracking failed', err));
+                } catch (e) {
+                    console.error('View tracking error', e);
+                }
+            }
         }
     };
 
@@ -131,56 +147,56 @@ export default function Ads() {
                                         key={ad._id || ad.id}
                                         onClick={() => handleAdClick(ad)}
                                         style={{
-                                            background: 'var(--wifi-mtaani-panel)',
-                                            padding: 20,
-                                            borderRadius: 12,
-                                            boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
-                                            border: '2px solid var(--wifi-mtaani-accent)',
+                                            background: `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.8)), url(${ad.imageUrl || '/images/purple-placeholder.jpg'}) center/cover no-repeat`,
+                                            backgroundColor: !ad.imageUrl ? 'var(--brand-1)' : 'transparent',
+                                            padding: 24,
+                                            borderRadius: 16,
+                                            boxShadow: '0 8px 16px rgba(0,0,0,0.4)',
+                                            border: '1px solid rgba(255,255,255,0.1)',
                                             position: 'relative',
                                             color: 'white',
-                                            cursor: ad.link ? 'pointer' : 'default'
+                                            cursor: ad.link ? 'pointer' : 'default',
+                                            height: 250,
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            justifyContent: 'flex-end',
+                                            overflow: 'hidden'
                                         }}>
+                                        {!ad.imageUrl && (
+                                            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.1, fontSize: 80 }}>
+                                                📢
+                                            </div>
+                                        )}
                                         <div style={{
                                             position: 'absolute',
-                                            top: -8,
+                                            top: 12,
                                             right: 12,
                                             background: 'var(--accent)',
                                             color: 'white',
                                             padding: '4px 12px',
                                             borderRadius: 12,
                                             fontSize: 12,
-                                            fontWeight: 600
+                                            fontWeight: 700,
+                                            boxShadow: '0 2px 4px rgba(0,0,0,0.3)'
                                         }}>
                                             FEATURED
                                         </div>
-                                        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12 }}>
-                                            <div style={{
-                                                fontSize: 32,
-                                                marginRight: 12,
-                                                width: 48,
-                                                height: 48,
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                background: 'var(--brand-1)',
-                                                borderRadius: 12,
-                                                color: 'white',
-                                                overflow: 'hidden'
-                                            }}>
-                                                {ad.imageUrl ? (
-                                                    <img src={ad.imageUrl} alt={ad.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                                ) : (
-                                                    ad.image || '📢'
-                                                )}
-                                            </div>
-                                            <h3 style={{ margin: 0, color: 'var(--wifi-mtaani-accent)', fontWeight: 600 }}>{ad.title}</h3>
+
+                                        <div style={{ position: 'relative', zIndex: 2 }}>
+                                            <h3 style={{ margin: '0 0 8px 0', color: 'white', fontSize: 24, fontWeight: 700, textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
+                                                {ad.title}
+                                            </h3>
+                                            <p style={{ margin: 0, color: 'rgba(255, 255, 255, 0.9)', fontSize: 14, lineHeight: 1.4, textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
+                                                {ad.content}
+                                            </p>
+                                            {ad.link && (
+                                                <div style={{ marginTop: 12 }}>
+                                                    <span style={{ fontSize: 13, color: 'var(--wifi-mtaani-accent)', fontWeight: 600, display: 'flex', alignItems: 'center' }}>
+                                                        {ad.cta || 'Learn More'} →
+                                                    </span>
+                                                </div>
+                                            )}
                                         </div>
-                                        <p style={{ marginBottom: 16, color: 'rgba(255, 255, 255, 0.8)', lineHeight: 1.5 }}>{ad.content}</p>
-                                        {ad.link && (
-                                            <button className="btn" style={{ width: '100%' }} onClick={(e) => { e.stopPropagation(); handleAdClick(ad); }}>
-                                                {ad.cta || 'Learn More'}
-                                            </button>
-                                        )}
                                     </div>
                                 ))}
                             </div>
@@ -202,14 +218,21 @@ export default function Ads() {
                                         key={ad._id || ad.id}
                                         onClick={() => handleAdClick(ad)}
                                         style={{
-                                            background: 'var(--wifi-mtaani-panel)',
+                                            background: `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.9)), url(${ad.imageUrl || '/images/purple-placeholder.jpg'}) center/cover no-repeat`,
+                                            backgroundColor: !ad.imageUrl ? 'var(--wifi-mtaani-panel)' : 'transparent',
                                             padding: 20,
                                             borderRadius: 12,
-                                            boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                                            boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
                                             border: '1px solid rgba(47, 231, 245, 0.2)',
                                             transition: 'transform 0.2s, box-shadow 0.2s',
                                             color: 'white',
-                                            cursor: ad.link ? 'pointer' : 'default'
+                                            cursor: ad.link ? 'pointer' : 'default',
+                                            height: 200,
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            justifyContent: 'flex-end',
+                                            position: 'relative',
+                                            overflow: 'hidden'
                                         }}
                                         onMouseEnter={(e) => {
                                             e.currentTarget.style.transform = 'translateY(-2px)';
@@ -218,37 +241,24 @@ export default function Ads() {
                                         }}
                                         onMouseLeave={(e) => {
                                             e.currentTarget.style.transform = 'translateY(0)';
-                                            e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
+                                            e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3)';
                                             e.currentTarget.style.borderColor = 'rgba(47, 231, 245, 0.2)';
                                         }}
                                     >
-                                        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12 }}>
-                                            <div style={{
-                                                fontSize: 24,
-                                                marginRight: 12,
-                                                width: 40,
-                                                height: 40,
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                background: 'var(--brand-1)',
-                                                borderRadius: 8,
-                                                color: 'white'
-                                            }}>
-                                                {ad.imageUrl ? (
-                                                    <img src={ad.imageUrl} alt={ad.title} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 8 }} />
-                                                ) : (
-                                                    ad.image || '📢'
-                                                )}
+                                        {!ad.imageUrl && (
+                                            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.1, fontSize: 60 }}>
+                                                📢
                                             </div>
-                                            <h3 style={{ margin: 0, color: 'var(--wifi-mtaani-accent)', fontSize: 16, fontWeight: 600 }}>{ad.title}</h3>
-                                        </div>
-                                        <p style={{ marginBottom: 16, color: 'rgba(255, 255, 255, 0.8)', lineHeight: 1.5, fontSize: 14 }}>{ad.content}</p>
-                                        {ad.link && (
-                                            <button className="btn ghost" style={{ width: '100%', fontSize: 14 }} onClick={(e) => { e.stopPropagation(); handleAdClick(ad); }}>
-                                                {ad.cta || 'Learn More'}
-                                            </button>
                                         )}
+
+                                        <div style={{ position: 'relative', zIndex: 2 }}>
+                                            <h3 style={{ margin: '0 0 6px 0', color: 'var(--wifi-mtaani-accent)', fontSize: 18, fontWeight: 600, textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>
+                                                {ad.title}
+                                            </h3>
+                                            <p style={{ margin: 0, color: 'rgba(255, 255, 255, 0.9)', lineHeight: 1.4, fontSize: 13, textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>
+                                                {ad.content}
+                                            </p>
+                                        </div>
                                     </div>
                                 ))}
                             </div>

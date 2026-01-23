@@ -333,7 +333,7 @@ export default function ProfilePage() {
 
                                 <div style={{ marginBottom: 20, padding: 16, background: '#fef3c7', borderRadius: 8, border: '1px solid #f59e0b' }}>
                                     <div className="kv" style={{ color: '#92400e', fontSize: 12 }}>
-                                        <strong>Important:</strong> Password recovery by SMS is currently disabled. Make sure to remember your new password.
+                                        <strong>Important:</strong> Password recovery is by email only, not by sms.
                                     </div>
                                 </div>
 

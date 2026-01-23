@@ -118,6 +118,26 @@ router.post('/:id/click', async (req, res) => {
     }
 });
 
+// POST /api/ads/views - Bulk track ad views
+router.post('/views', async (req, res) => {
+    try {
+        const { adIds } = req.body;
+        if (!adIds || !Array.isArray(adIds) || adIds.length === 0) {
+            return res.json({ ok: true, message: 'No ads to track' });
+        }
+
+        await Ad.updateMany(
+            { _id: { $in: adIds } },
+            { $inc: { views: 1 } }
+        );
+
+        res.json({ ok: true, message: 'Views tracked' });
+    } catch (error) {
+        logger.error('Track ad views error', { error: error.message });
+        res.status(500).json({ error: 'Failed to track views' });
+    }
+});
+
 // Admin routes - require authentication
 // GET /api/ads/admin/list - Get all ads (admin)
 router.get('/admin/list', authenticateAdmin, async (req, res) => {

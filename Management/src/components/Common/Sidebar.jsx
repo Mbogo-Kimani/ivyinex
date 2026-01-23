@@ -80,6 +80,13 @@ const Sidebar = ({ isOpen, onClose }) => {
             permission: 'admin',
         },
         {
+            name: 'Messages',
+            href: '/messages',
+            icon: Megaphone, // Reusing Megaphone or we can import MessageSquare
+            current: location.pathname.startsWith('/messages'),
+            permission: 'admin',
+        },
+        {
             name: 'Logs',
             href: '/logs',
             icon: FileText,
@@ -129,9 +136,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                     <div className="flex h-16 flex-shrink-0 items-center justify-between px-4 border-b border-gray-200">
                         <div className="flex items-center">
                             <div className="flex-shrink-0">
-                                <div className="h-8 w-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                                    <span className="text-white font-bold text-sm">E</span>
-                                </div>
+                                <img src="/logo.png" alt="Logo" className="h-10 w-auto" />
                             </div>
                             <div className="ml-3">
                                 <h1 className="text-lg font-semibold text-gray-900">Eco Wifi</h1>

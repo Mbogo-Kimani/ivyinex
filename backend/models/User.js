@@ -70,12 +70,12 @@ UserSchema.methods.deductPoints = async function (amount) {
 UserSchema.methods.generatePasswordResetToken = function () {
   const crypto = require('crypto');
   const resetToken = crypto.randomBytes(32).toString('hex');
-  
+
   // Hash the token before saving
   const bcrypt = require('bcryptjs');
   this.passwordResetToken = bcrypt.hashSync(resetToken, 10);
   this.passwordResetExpires = Date.now() + 2 * 60 * 60 * 1000; // 2 hours (120 minutes)
-  
+
   return resetToken;
 };
 
@@ -84,11 +84,11 @@ UserSchema.methods.verifyPasswordResetToken = async function (token) {
   if (!this.passwordResetToken || !this.passwordResetExpires) {
     return false;
   }
-  
+
   if (Date.now() > this.passwordResetExpires) {
     return false;
   }
-  
+
   const bcrypt = require('bcryptjs');
   return bcrypt.compareSync(token, this.passwordResetToken);
 };
@@ -103,12 +103,12 @@ UserSchema.methods.clearPasswordResetToken = function () {
 UserSchema.methods.generateEmailVerificationToken = function () {
   const crypto = require('crypto');
   const verificationToken = crypto.randomBytes(32).toString('hex');
-  
+
   // Hash the token before saving
   const bcrypt = require('bcryptjs');
   this.emailVerificationToken = bcrypt.hashSync(verificationToken, 10);
-  this.emailVerificationExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
-  
+  this.emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
   return verificationToken;
 };
 
@@ -117,11 +117,11 @@ UserSchema.methods.verifyEmailVerificationToken = async function (token) {
   if (!this.emailVerificationToken || !this.emailVerificationExpires) {
     return false;
   }
-  
+
   if (Date.now() > this.emailVerificationExpires) {
     return false;
   }
-  
+
   const bcrypt = require('bcryptjs');
   return bcrypt.compareSync(token, this.emailVerificationToken);
 };

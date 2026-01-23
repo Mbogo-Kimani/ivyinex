@@ -12,5 +12,8 @@ router.use('/mikrotik', require('./mikrotik'));
 router.use('/points', require('./points'));
 router.use('/email', require('./email'));
 router.use('/ads', require('./ads'));
+router.use('/messages', require('./messages'));
+router.use('/analytics', require('./analytics'));
+
 
 module.exports = router;

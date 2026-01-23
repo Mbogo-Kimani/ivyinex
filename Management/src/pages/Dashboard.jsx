@@ -29,6 +29,7 @@ const Dashboard = () => {
         activeSubscriptions: 0,
         totalRevenue: 0,
         monthlyRevenue: 0,
+        totalVisits: 0,
     });
 
     const [systemHealth, setSystemHealth] = useState({
@@ -46,6 +47,7 @@ const Dashboard = () => {
     const { data: subscriptionsData, loading: subscriptionsLoading } = useData(apiMethods.getSubscriptions, [], { enabled: isAuthenticated });
     const { data: devicesData, loading: devicesLoading } = useData(apiMethods.getDevices, [], { enabled: isAuthenticated });
     const { data: systemHealthData, loading: systemLoading } = useData(apiMethods.getSystemHealth, [], { enabled: isAuthenticated });
+    const { data: visitData, loading: visitsLoading } = useData(apiMethods.getVisitAnalytics, [], { enabled: isAuthenticated });
 
     useEffect(() => {
         if (paymentsData) {
@@ -106,6 +108,15 @@ const Dashboard = () => {
         }
     }, [systemHealthData]);
 
+    useEffect(() => {
+        if (visitData) {
+            setStats(prev => ({
+                ...prev,
+                totalVisits: visitData.totalVisits || 0
+            }));
+        }
+    }, [visitData]);
+
     const statCards = [
         {
             title: 'Total Subscriptions',
@@ -160,6 +171,15 @@ const Dashboard = () => {
             icon: TrendingUp,
             color: 'emerald',
             loading: paymentsLoading,
+        },
+        {
+            title: 'Web Visits',
+            value: formatNumber(stats.totalVisits),
+            change: '',
+            changeType: 'neutral',
+            icon: Users,
+            color: 'orange',
+            loading: visitsLoading,
         },
     ];
 

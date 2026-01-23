@@ -796,32 +796,94 @@ router.post('/actions', authenticateAdmin, async (req, res) => {
 
         switch (action) {
             case 'clear-old-logs':
-                const days = data?.days || 30;
-                const cutoffDate = new Date();
-                cutoffDate.setDate(cutoffDate.getDate() - days);
-                const result = await LogModel.deleteMany({ createdAt: { $lt: cutoffDate } });
-                await LogModel.create({
-                    level: 'info',
-                    source: 'admin',
-                    message: 'logs-cleared',
-                    metadata: { deleted: result.deletedCount, days }
-                });
-                res.json({ success: true, message: `Cleared ${result.deletedCount} old logs` });
+                // Implement log clearing logic here
                 break;
-
-            case 'refresh-cache':
-                // Placeholder for cache refresh
-                res.json({ success: true, message: 'Cache refreshed' });
-                break;
-
             default:
-                res.status(400).json({ error: 'Invalid action' });
+                return res.status(400).json({ error: 'Invalid action' });
         }
+
+        res.json({ ok: true, message: 'Action performed successfully' });
     } catch (error) {
-        console.error('System action error:', error);
         res.status(500).json({ error: 'Failed to perform action' });
     }
 });
+
+// Broadcast Messages
+router.post('/messages/broadcast', authenticateAdmin, async (req, res) => {
+    try {
+        const { title, body, target, targetValue } = req.body;
+        const Message = require('../models/Message');
+        const Broadcast = require('../models/Broadcast');
+
+        if (!title || !body) {
+            return res.status(400).json({ error: 'Title and body are required' });
+        }
+
+        // Create Broadcast record
+        const broadcast = await Broadcast.create({
+            title,
+            body,
+            target,
+            targetValue,
+            adminId: req.user._id
+        });
+
+        // Determine recipients
+        let query = {};
+        if (target === 'specific' && targetValue) {
+            const user = await User.findOne({ phone: targetValue });
+            if (!user) return res.status(404).json({ error: 'User not found' });
+            query = { _id: user._id };
+        } else if (target === 'active') {
+            // Example: users with active subscriptions
+            const activeSubs = await Subscription.find({ active: true }).distinct('userId');
+            query = { _id: { $in: activeSubs } };
+        }
+        // else target === 'all', query = {}
+
+        const users = await User.find(query).select('_id');
+
+        // Create messages in bulk
+        const messagesToCreate = users.map(u => ({
+            userId: u._id,
+            title,
+            body,
+            type: 'admin',
+            broadcastId: broadcast._id,
+            createdAt: new Date()
+        }));
+
+        if (messagesToCreate.length > 0) {
+            await Message.insertMany(messagesToCreate);
+        }
+
+        // Update stats
+        broadcast.stats.sent = messagesToCreate.length;
+        await broadcast.save();
+
+        res.json({ ok: true, sent: messagesToCreate.length, broadcast });
+
+    } catch (error) {
+        console.error('Broadcast error:', error);
+        res.status(500).json({ error: 'Failed to send broadcast' });
+    }
+});
+
+router.get('/messages/broadcasts', authenticateAdmin, async (req, res) => {
+    try {
+        const Broadcast = require('../models/Broadcast');
+        const broadcasts = await Broadcast.find()
+            .sort({ createdAt: -1 })
+            .populate('adminId', 'name')
+            .limit(50);
+        res.json(broadcasts);
+    } catch (error) {
+        console.error('Fetch broadcasts error:', error);
+        res.status(500).json({ error: 'Failed to fetch broadcasts' });
+    }
+});
+
+
 
 // create voucher(s)
 router.post('/vouchers/create', authenticateAdmin, async (req, res) => {

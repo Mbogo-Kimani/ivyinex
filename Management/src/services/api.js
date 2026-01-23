@@ -34,7 +34,7 @@ api.interceptors.response.use(
             localStorage.removeItem('admin_token');
             localStorage.removeItem('admin_user');
             sessionStorage.clear(); // Clear session storage as well
-            
+
             // Only redirect if not already on login page
             if (window.location.pathname !== '/login') {
                 // Use replace to prevent back button issues
@@ -322,34 +322,52 @@ export const apiMethods = {
 
     // Ads
     getAds: async (params = {}) => {
-        const response = await api.get('/api/ads/admin/list', { params });
+        const response = await api.get('/ads/admin/list', { params });
         return response.data;
     },
 
     getAd: async (id) => {
-        const response = await api.get(`/api/ads/${id}`);
+        const response = await api.get(`/ads/${id}`);
         return response.data;
     },
 
     createAd: async (data) => {
-        const response = await api.post('/api/ads/admin/create', data);
+        const response = await api.post('/ads/admin/create', data);
         return response.data;
     },
 
     updateAd: async (id, data) => {
-        const response = await api.put(`/api/ads/admin/${id}`, data);
+        const response = await api.put(`/ads/admin/${id}`, data);
         return response.data;
     },
 
     deleteAd: async (id) => {
-        const response = await api.delete(`/api/ads/admin/${id}`);
+        const response = await api.delete(`/ads/admin/${id}`);
         return response.data;
     },
 
     getAdStats: async () => {
-        const response = await api.get('/api/ads/admin/stats');
+        const response = await api.get('/ads/admin/stats');
+        return response.data;
+    },
+
+    // Broadcasts
+    sendBroadcast: async (data) => {
+        const response = await api.post('/admin/messages/broadcast', data);
+        return response.data;
+    },
+
+    getBroadcasts: async () => {
+        const response = await api.get('/admin/messages/broadcasts');
+        return response.data;
+    },
+
+    // Analytics (Visits)
+    getVisitAnalytics: async () => {
+        const response = await api.get('/analytics/stats');
         return response.data;
     },
 };
+
 
 export default api;

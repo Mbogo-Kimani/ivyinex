@@ -232,6 +232,20 @@ router.post('/register', async (req, res) => {
             metadata: { phone: normalizedPhone, userId: user._id, email: user.email || null }
         });
 
+        // Send Welcome Message
+        try {
+            const Message = require('../models/Message');
+            await Message.create({
+                userId: user._id,
+                title: 'Welcome to Wifi Mtaani! 🚀',
+                body: 'Thanks for joining! You can earn points by referring friends. Check your account page for your referral code.',
+                type: 'welcome'
+            });
+        } catch (msgErr) {
+            logger.error('Failed to create welcome message', { error: msgErr.message });
+        }
+
+
         const code = await otp.createAndSend(normalizedPhone);
 
         const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRY || '7d' });

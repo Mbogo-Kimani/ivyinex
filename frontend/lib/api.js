@@ -430,3 +430,42 @@ export async function checkConnectionStatus() {
     if (!res.ok) throw new Error(data.error || 'Failed to check connection status');
     return data;
 }
+// Messages APIs
+export async function getMessages(params = {}) {
+    const query = new URLSearchParams(params).toString();
+    const res = await fetch(`/api/messages?${query}`, {
+        headers: getAuthHeaders()
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to get messages');
+    return data;
+}
+
+export async function getUnreadMessageCount() {
+    const res = await fetch(`/api/messages/unread`, {
+        headers: getAuthHeaders()
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to get unread count');
+    return data;
+}
+
+export async function markMessageRead(id) {
+    const res = await fetch(`/api/messages/${id}/read`, {
+        method: 'PUT',
+        headers: getAuthHeaders()
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to mark message as read');
+    return data;
+}
+
+export async function markAllMessagesRead() {
+    const res = await fetch(`/api/messages/read-all`, {
+        method: 'PUT',
+        headers: getAuthHeaders()
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to mark all messages as read');
+    return data;
+}

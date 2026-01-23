@@ -7,11 +7,14 @@ export default function Header({ onOpenVoucher, portalData }) {
     const [menuOpen, setMenuOpen] = useState(false);
     return (
         <header className="header container" role="banner" style={{ overflow: 'hidden' }}>
-            <div className="brand">
-                <div>
-                    <div className="site-title">Wifi Mtaani</div>
-                    <div className="site-sub">Tap.Pay.Connect.</div>
-                </div>
+            <div className="brand" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none' }}>
+                    <img src="/logo.png" alt="Wifi Mtaani Logo" style={{ height: 40, width: 'auto' }} />
+                    <div className="hide-xs">
+                        <div className="site-title" style={{ fontSize: 20, lineHeight: 1.2 }}>Wifi Mtaani</div>
+                        <div className="site-sub" style={{ fontSize: 12 }}>Tap.Pay.Connect.</div>
+                    </div>
+                </Link>
             </div>
 
             {/* Desktop nav */}
@@ -21,6 +24,7 @@ export default function Header({ onOpenVoucher, portalData }) {
                     {isAuthenticated ? (
                         <>
                             <Link href="/account/free-trial" className="btn ghost">Free Trial</Link>
+                            <Link href="/messages" className="btn ghost">Messages</Link>
                             <Link href="/account" className="btn ghost">My Account</Link>
                             <button className="btn ghost" onClick={logout}>Logout</button>
                         </>
@@ -61,6 +65,7 @@ export default function Header({ onOpenVoucher, portalData }) {
                         {isAuthenticated ? (
                             <>
                                 <Link href="/account/free-trial" className="btn ghost" onClick={() => setMenuOpen(false)}>Free Trial</Link>
+                                <Link href="/messages" className="btn ghost" onClick={() => setMenuOpen(false)}>Messages</Link>
                                 <Link href="/account" className="btn ghost" onClick={() => setMenuOpen(false)}>My Account</Link>
                                 <button className="btn ghost" onClick={() => { setMenuOpen(false); logout(); }}>Logout</button>
                             </>

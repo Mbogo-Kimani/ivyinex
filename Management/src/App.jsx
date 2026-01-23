@@ -13,6 +13,7 @@ import Payments from './pages/Payments'
 import Logs from './pages/Logs'
 import Settings from './pages/Settings'
 import Ads from './pages/Ads'
+import Messages from './pages/Messages'
 import Login from './pages/Login'
 import { AuthProvider } from './hooks/useAuth'
 
@@ -44,6 +45,7 @@ function App() {
                                 <Route path="vouchers" element={<Vouchers />} />
                                 <Route path="payments" element={<Payments />} />
                                 <Route path="ads" element={<Ads />} />
+                                <Route path="messages" element={<Messages />} />
                                 <Route path="logs" element={<Logs />} />
                                 <Route path="settings" element={<Settings />} />
                             </Route>
