@@ -86,7 +86,7 @@ export async function fetchPackages() {
     try {
         console.log('Fetching packages from:', `/api/packages`);
 
-        const data = await fetchWithRetry(`/api/packages`, {
+        const data = await fetchWithRetry(`${BACKEND}/api/packages`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -137,7 +137,7 @@ function deduplicateFreeTrialPackages(packages) {
 // Checkout APIs
 export async function startCheckout(payload) {
     // payload: { phone, packageKey, mac, ip }
-    const res = await fetch(`/api/checkout/start`, {
+    const res = await fetch(`${BACKEND}/api/checkout/start`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -149,7 +149,7 @@ export async function startCheckout(payload) {
 
 // Check payment status
 export async function checkPaymentStatus(paymentId) {
-    const res = await fetch(`/api/checkout/status/${paymentId}`, {
+    const res = await fetch(`${BACKEND}/api/checkout/status/${paymentId}`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' }
     });
@@ -161,7 +161,7 @@ export async function checkPaymentStatus(paymentId) {
 // Voucher APIs
 export async function redeemVoucher(payload) {
     // payload: { code, mac, ip, userId? }
-    const res = await fetch(`/api/vouchers/redeem`, {
+    const res = await fetch(`${BACKEND}/api/vouchers/redeem`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -173,7 +173,7 @@ export async function redeemVoucher(payload) {
 
 // Authentication APIs
 export async function register(userData) {
-    const res = await fetch(`/api/auth/register`, {
+    const res = await fetch(`${BACKEND}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData)
@@ -187,7 +187,7 @@ export async function register(userData) {
 }
 
 export async function login(credentials) {
-    const res = await fetch(`/api/auth/login`, {
+    const res = await fetch(`${BACKEND}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(credentials)
@@ -201,7 +201,7 @@ export async function login(credentials) {
 }
 
 export async function getCurrentUser() {
-    const res = await fetch(`/api/auth/me`, {
+    const res = await fetch(`${BACKEND}/api/auth/me`, {
         headers: getAuthHeaders()
     });
     const data = await res.json();
@@ -211,7 +211,7 @@ export async function getCurrentUser() {
 
 // Profile APIs
 export async function updateProfile(profileData) {
-    const res = await fetch(`/api/auth/profile`, {
+    const res = await fetch(`${BACKEND}/api/auth/profile`, {
         method: 'PUT',
         headers: getAuthHeaders(),
         body: JSON.stringify(profileData)
@@ -222,7 +222,7 @@ export async function updateProfile(profileData) {
 }
 
 export async function changePassword(passwordData) {
-    const res = await fetch(`/api/auth/change-password`, {
+    const res = await fetch(`${BACKEND}/api/auth/change-password`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify(passwordData)
@@ -284,7 +284,7 @@ export async function verifyEmail(token) {
 
 // Subscription APIs
 export async function getSubscriptions() {
-    const res = await fetch(`/api/subscriptions`, {
+    const res = await fetch(`${BACKEND}/api/subscriptions`, {
         headers: getAuthHeaders()
     });
     const data = await res.json();
@@ -293,7 +293,7 @@ export async function getSubscriptions() {
 }
 
 export async function getSubscription(id) {
-    const res = await fetch(`/api/subscriptions/${id}`, {
+    const res = await fetch(`${BACKEND}/api/subscriptions/${id}`, {
         headers: getAuthHeaders()
     });
     const data = await res.json();
@@ -302,7 +302,7 @@ export async function getSubscription(id) {
 }
 
 export async function claimFreeTrial(mac) {
-    const res = await fetch(`/api/subscriptions/free-trial`, {
+    const res = await fetch(`${BACKEND}/api/subscriptions/free-trial`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({ mac })
@@ -314,7 +314,7 @@ export async function claimFreeTrial(mac) {
 
 // Device Management APIs
 export async function addDeviceToSubscription(subscriptionId, deviceData) {
-    const res = await fetch(`/api/subscriptions/${subscriptionId}/devices`, {
+    const res = await fetch(`${BACKEND}/api/subscriptions/${subscriptionId}/devices`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify(deviceData)
@@ -325,7 +325,7 @@ export async function addDeviceToSubscription(subscriptionId, deviceData) {
 }
 
 export async function updateDevice(subscriptionId, deviceId, deviceData) {
-    const res = await fetch(`/api/subscriptions/${subscriptionId}/devices/${deviceId}`, {
+    const res = await fetch(`${BACKEND}/api/subscriptions/${subscriptionId}/devices/${deviceId}`, {
         method: 'PUT',
         headers: getAuthHeaders(),
         body: JSON.stringify(deviceData)
@@ -336,7 +336,7 @@ export async function updateDevice(subscriptionId, deviceId, deviceData) {
 }
 
 export async function removeDevice(subscriptionId, deviceId) {
-    const res = await fetch(`/api/subscriptions/${subscriptionId}/devices/${deviceId}`, {
+    const res = await fetch(`${BACKEND}/api/subscriptions/${subscriptionId}/devices/${deviceId}`, {
         method: 'DELETE',
         headers: getAuthHeaders()
     });
@@ -347,7 +347,7 @@ export async function removeDevice(subscriptionId, deviceId) {
 
 // Points APIs
 export async function getUserPoints() {
-    const res = await fetch(`/api/points/balance`, {
+    const res = await fetch(`${BACKEND}/api/points/balance`, {
         headers: getAuthHeaders()
     });
     const data = await res.json();
@@ -357,7 +357,7 @@ export async function getUserPoints() {
 }
 
 export async function getPointsHistory() {
-    const res = await fetch(`/api/points/history`, {
+    const res = await fetch(`${BACKEND}/api/points/history`, {
         headers: getAuthHeaders()
     });
     const data = await res.json();
@@ -366,7 +366,7 @@ export async function getPointsHistory() {
 }
 
 export async function usePoints(payload) {
-    const res = await fetch(`/api/points/use`, {
+    const res = await fetch(`${BACKEND}/api/points/use`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify(payload)
@@ -377,7 +377,7 @@ export async function usePoints(payload) {
 }
 
 export async function getReferralCode() {
-    const res = await fetch(`/api/points/referral-code`, {
+    const res = await fetch(`${BACKEND}/api/points/referral-code`, {
         headers: getAuthHeaders()
     });
     const data = await res.json();
@@ -386,7 +386,7 @@ export async function getReferralCode() {
 }
 
 export async function processReferral(referralCode, userId) {
-    const res = await fetch(`/api/points/referral`, {
+    const res = await fetch(`${BACKEND}/api/points/referral`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ referralCode, newUserId: userId })
@@ -398,7 +398,7 @@ export async function processReferral(referralCode, userId) {
 
 // Reconnect API - grant access for active subscriptions
 export async function reconnectDevice(mac, ip) {
-    const res = await fetch(`/api/subscriptions/reconnect`, {
+    const res = await fetch(`${BACKEND}/api/subscriptions/reconnect`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({ mac, ip })
@@ -417,7 +417,7 @@ export async function reconnectDevice(mac, ip) {
 
 // Check MikroTik connection status
 export async function checkConnectionStatus() {
-    const res = await fetch(`/api/subscriptions/status/connection`, {
+    const res = await fetch(`${BACKEND}/api/subscriptions/status/connection`, {
         headers: getAuthHeaders()
     });
     const text = await res.text();
@@ -433,7 +433,7 @@ export async function checkConnectionStatus() {
 // Messages APIs
 export async function getMessages(params = {}) {
     const query = new URLSearchParams(params).toString();
-    const res = await fetch(`/api/messages?${query}`, {
+    const res = await fetch(`${BACKEND}/api/messages?${query}`, {
         headers: getAuthHeaders()
     });
     const data = await res.json();
@@ -442,7 +442,7 @@ export async function getMessages(params = {}) {
 }
 
 export async function getUnreadMessageCount() {
-    const res = await fetch(`/api/messages/unread`, {
+    const res = await fetch(`${BACKEND}/api/messages/unread`, {
         headers: getAuthHeaders()
     });
     const data = await res.json();
@@ -451,7 +451,7 @@ export async function getUnreadMessageCount() {
 }
 
 export async function markMessageRead(id) {
-    const res = await fetch(`/api/messages/${id}/read`, {
+    const res = await fetch(`${BACKEND}/api/messages/${id}/read`, {
         method: 'PUT',
         headers: getAuthHeaders()
     });
@@ -461,7 +461,7 @@ export async function markMessageRead(id) {
 }
 
 export async function markAllMessagesRead() {
-    const res = await fetch(`/api/messages/read-all`, {
+    const res = await fetch(`${BACKEND}/api/messages/read-all`, {
         method: 'PUT',
         headers: getAuthHeaders()
     });
