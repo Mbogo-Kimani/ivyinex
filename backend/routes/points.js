@@ -15,7 +15,29 @@ const authenticateToken = require('../middleware/auth');
  */
 router.get('/balance', authenticateToken, async (req, res) => {
     try {
-        const user = await User.findById(req.user.id).select('points referralCode');
+        let user = await User.findById(req.user.id);
+
+        // Auto-generate referral code if missing (fix for existing users)
+        if (!user.referralCode) {
+            let referralCode;
+            let isUnique = false;
+            let attempts = 0;
+
+            while (!isUnique && attempts < 5) {
+                referralCode = user.generateReferralCode();
+                const existing = await User.findOne({ referralCode });
+                if (!existing) {
+                    isUnique = true;
+                }
+                attempts++;
+            }
+
+            if (isUnique) {
+                user.referralCode = referralCode;
+                await user.save();
+            }
+        }
+
         res.json({
             points: user.points,
             referralCode: user.referralCode

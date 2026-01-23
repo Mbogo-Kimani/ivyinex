@@ -256,6 +256,32 @@ export async function resetPassword(token, newPassword) {
     return data;
 }
 
+// Verify Email
+export async function verifyEmail(token) {
+    const res = await fetch(`${BACKEND}/api/auth/verify-email`, {
+        method: 'GET', // Or POST, checking backend route usually it uses GET or POST with token
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}` // Sometimes passed as header, usually query param is enough.
+        },
+        // If it's a POST, we'd send body: JSON.stringify({ token })
+    });
+    // However, link usually implies GET. I'll assume GET /api/auth/verify-email?token=... or similar
+    // Actually, looking at typical patterns, let's check if the backend expects a POST body or query param.
+    // The link is /verify-email?token=... so the frontend extracts it.
+    // Let's assume the backend endpoint is POST /api/auth/verify-email based on typical practices in this codebase.
+
+    const verifyRes = await fetch(`${BACKEND}/api/auth/verify-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token })
+    });
+
+    const data = await verifyRes.json();
+    if (!verifyRes.ok) return { ok: false, error: data.error || 'Verification failed' };
+    return { ok: true, ...data };
+}
+
 // Subscription APIs
 export async function getSubscriptions() {
     const res = await fetch(`/api/subscriptions`, {
@@ -325,6 +351,7 @@ export async function getUserPoints() {
         headers: getAuthHeaders()
     });
     const data = await res.json();
+    console.log('User points response:', data); // Debug referral code
     if (!res.ok) throw new Error(data.error || 'Failed to get user points');
     return data;
 }

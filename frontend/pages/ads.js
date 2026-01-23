@@ -1,13 +1,19 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '../contexts/ToastContext';
 import Header from '../components/Header';
+import AuthModal from '../components/AuthModal';
 
 export default function Ads() {
     const router = useRouter();
+    const { isAuthenticated } = useAuth();
+    const { showError } = useToast();
     const [ads, setAds] = useState([]);
     const [loading, setLoading] = useState(true);
     const [autoReconnected, setAutoReconnected] = useState(false);
+    const [showLoginModal, setShowLoginModal] = useState(false);
 
     const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'https://ivyinex.onrender.com';
 
@@ -26,7 +32,7 @@ export default function Ads() {
             setLoading(true);
             const response = await fetch(`${BACKEND_URL}/api/ads`);
             const data = await response.json();
-            
+
             if (data.ok && data.ads) {
                 // Filter active ads
                 const now = new Date();
@@ -63,6 +69,13 @@ export default function Ads() {
         }
     };
 
+    const handleMyAccountClick = (e) => {
+        if (!isAuthenticated) {
+            e.preventDefault();
+            setShowLoginModal(true);
+        }
+    };
+
     const featuredAds = ads.filter(ad => ad.featured);
     const regularAds = ads.filter(ad => !ad.featured);
 
@@ -72,11 +85,11 @@ export default function Ads() {
             <div style={{ padding: 20, minHeight: '100vh', background: 'linear-gradient(180deg, #081425 0%, #1C3D50 100%)' }}>
                 <div className="container">
                     {/* Welcome Section */}
-                    <div style={{ 
-                        background: 'linear-gradient(135deg, var(--wifi-mtaani-primary) 0%, var(--wifi-mtaani-accent) 100%)', 
-                        color: 'white', 
-                        padding: 24, 
-                        borderRadius: 16, 
+                    <div style={{
+                        background: 'linear-gradient(135deg, var(--wifi-mtaani-primary) 0%, var(--wifi-mtaani-accent) 100%)',
+                        color: 'white',
+                        padding: 24,
+                        borderRadius: 16,
                         marginBottom: 24,
                         textAlign: 'center',
                         boxShadow: '0 8px 24px rgba(47, 231, 245, 0.3)'
@@ -88,7 +101,7 @@ export default function Ads() {
                             Tap.Pay.Connect.
                         </p>
                         <p style={{ fontSize: 16, opacity: 0.9, marginBottom: 16 }}>
-                            {autoReconnected 
+                            {autoReconnected
                                 ? 'You\'ve been automatically reconnected! Your subscription is still active.'
                                 : 'Welcome to Wifi Mtaani! Check out our latest promotions and community updates below.'
                             }
@@ -97,7 +110,12 @@ export default function Ads() {
                             <Link href="/" className="btn" style={{ background: 'rgba(255,255,255,0.2)', color: 'white', border: '1px solid rgba(255,255,255,0.3)' }}>
                                 Browse More Packages
                             </Link>
-                            <Link href="/account" className="btn ghost" style={{ color: 'white', border: '1px solid rgba(255,255,255,0.3)' }}>
+                            <Link
+                                href="/account"
+                                className="btn ghost"
+                                onClick={handleMyAccountClick}
+                                style={{ color: 'white', border: '1px solid rgba(255,255,255,0.3)' }}
+                            >
                                 My Account
                             </Link>
                         </div>
@@ -109,19 +127,19 @@ export default function Ads() {
                             <h2 style={{ marginBottom: 16, color: 'var(--wifi-mtaani-accent)', fontWeight: 600 }}>🔥 Featured Promotions</h2>
                             <div style={{ display: 'grid', gap: 16, gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
                                 {featuredAds.map(ad => (
-                                    <div 
-                                        key={ad._id || ad.id} 
+                                    <div
+                                        key={ad._id || ad.id}
                                         onClick={() => handleAdClick(ad)}
                                         style={{
-                                        background: 'var(--wifi-mtaani-panel)',
-                                        padding: 20,
-                                        borderRadius: 12,
-                                        boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
-                                        border: '2px solid var(--wifi-mtaani-accent)',
-                                        position: 'relative',
-                                        color: 'white',
-                                        cursor: ad.link ? 'pointer' : 'default'
-                                    }}>
+                                            background: 'var(--wifi-mtaani-panel)',
+                                            padding: 20,
+                                            borderRadius: 12,
+                                            boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
+                                            border: '2px solid var(--wifi-mtaani-accent)',
+                                            position: 'relative',
+                                            color: 'white',
+                                            cursor: ad.link ? 'pointer' : 'default'
+                                        }}>
                                         <div style={{
                                             position: 'absolute',
                                             top: -8,
@@ -159,9 +177,9 @@ export default function Ads() {
                                         </div>
                                         <p style={{ marginBottom: 16, color: 'rgba(255, 255, 255, 0.8)', lineHeight: 1.5 }}>{ad.content}</p>
                                         {ad.link && (
-                                        <button className="btn" style={{ width: '100%' }} onClick={(e) => { e.stopPropagation(); handleAdClick(ad); }}>
-                                            {ad.cta || 'Learn More'}
-                                        </button>
+                                            <button className="btn" style={{ width: '100%' }} onClick={(e) => { e.stopPropagation(); handleAdClick(ad); }}>
+                                                {ad.cta || 'Learn More'}
+                                            </button>
                                         )}
                                     </div>
                                 ))}
@@ -180,19 +198,19 @@ export default function Ads() {
                         ) : (
                             <div style={{ display: 'grid', gap: 16, gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
                                 {regularAds.map(ad => (
-                                    <div 
-                                        key={ad._id || ad.id} 
+                                    <div
+                                        key={ad._id || ad.id}
                                         onClick={() => handleAdClick(ad)}
                                         style={{
-                                        background: 'var(--wifi-mtaani-panel)',
-                                        padding: 20,
-                                        borderRadius: 12,
-                                        boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
-                                        border: '1px solid rgba(47, 231, 245, 0.2)',
-                                        transition: 'transform 0.2s, box-shadow 0.2s',
-                                        color: 'white',
-                                        cursor: ad.link ? 'pointer' : 'default'
-                                    }}
+                                            background: 'var(--wifi-mtaani-panel)',
+                                            padding: 20,
+                                            borderRadius: 12,
+                                            boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                                            border: '1px solid rgba(47, 231, 245, 0.2)',
+                                            transition: 'transform 0.2s, box-shadow 0.2s',
+                                            color: 'white',
+                                            cursor: ad.link ? 'pointer' : 'default'
+                                        }}
                                         onMouseEnter={(e) => {
                                             e.currentTarget.style.transform = 'translateY(-2px)';
                                             e.currentTarget.style.boxShadow = '0 8px 16px rgba(47, 231, 245, 0.3)';
@@ -227,9 +245,9 @@ export default function Ads() {
                                         </div>
                                         <p style={{ marginBottom: 16, color: 'rgba(255, 255, 255, 0.8)', lineHeight: 1.5, fontSize: 14 }}>{ad.content}</p>
                                         {ad.link && (
-                                        <button className="btn ghost" style={{ width: '100%', fontSize: 14 }} onClick={(e) => { e.stopPropagation(); handleAdClick(ad); }}>
-                                            {ad.cta || 'Learn More'}
-                                        </button>
+                                            <button className="btn ghost" style={{ width: '100%', fontSize: 14 }} onClick={(e) => { e.stopPropagation(); handleAdClick(ad); }}>
+                                                {ad.cta || 'Learn More'}
+                                            </button>
                                         )}
                                     </div>
                                 ))}
@@ -253,6 +271,14 @@ export default function Ads() {
                     </div>
                 </div>
             </div>
+
+            <AuthModal
+                isOpen={showLoginModal}
+                onClose={() => setShowLoginModal(false)}
+                title="Login Required"
+                message="You need to be logged in to view your account details. Please login or create an account to continue."
+                redirectPath="/account"
+            />
         </>
     );
 }

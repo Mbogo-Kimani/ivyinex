@@ -14,7 +14,8 @@ export default function Register() {
         phone: '',
         email: '',
         password: '',
-        confirmPassword: ''
+        confirmPassword: '',
+        referralCode: ''
     });
     const [errors, setErrors] = useState({});
     const [portalData, setPortalData] = useState(null);
@@ -73,7 +74,8 @@ export default function Register() {
                 phone: normalizedPhone,
                 email: formData.email.trim() || undefined,
                 password: formData.password,
-                mac: portalData?.mac || null
+                mac: portalData?.mac || null,
+                referralCode: formData.referralCode?.trim() || undefined
             };
 
             // Call registration
@@ -84,6 +86,9 @@ export default function Register() {
                 const urlParams = new URLSearchParams(window.location.search);
                 const redirectPath = urlParams.get('redirect') || '/account';
                 router.push(redirectPath);
+            } else {
+                // Display specific error from backend
+                setErrors({ general: result.error || 'Registration failed' });
             }
 
         } catch (err) {
@@ -173,6 +178,20 @@ export default function Register() {
                             disabled={formLoading}
                         />
                         {errors.email && <div style={{ color: '#fca5a5', fontSize: 12, marginTop: 4 }}>{errors.email}</div>}
+                    </div>
+
+                    <div style={{ marginBottom: 20 }}>
+                        <label htmlFor="referralCode">Referral Code (Optional)</label>
+                        <input
+                            type="text"
+                            id="referralCode"
+                            name="referralCode"
+                            value={formData.referralCode}
+                            onChange={handleInputChange}
+                            className="input"
+                            placeholder="Enter referral code if you have one"
+                            disabled={formLoading}
+                        />
                     </div>
 
                     <div style={{ marginBottom: 20 }}>

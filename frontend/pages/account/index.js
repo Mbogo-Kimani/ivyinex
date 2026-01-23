@@ -256,7 +256,9 @@ export default function AccountDashboard() {
                                 Share your referral code and earn 50 points for each friend who signs up using your link!
                             </p>
 
-                            {referralCode && (
+                            {loading ? (
+                                <div className="kv">Loading referral code...</div>
+                            ) : (
                                 <div style={{ marginBottom: 16 }}>
                                     <label style={{ display: 'block', marginBottom: 8, fontWeight: 'bold', color: '#0c4a6e' }}>
                                         Your Referral Code:
@@ -276,19 +278,27 @@ export default function AccountDashboard() {
                                             color: '#0c4a6e',
                                             flex: 1
                                         }}>
-                                            {referralCode}
+                                            {referralCode || 'Generating...'}
                                         </code>
                                         <button
                                             className="btn ghost"
                                             onClick={() => {
-                                                navigator.clipboard.writeText(referralCode);
-                                                alert('Referral code copied to clipboard!');
+                                                if (referralCode) {
+                                                    navigator.clipboard.writeText(referralCode);
+                                                    alert('Referral code copied to clipboard!');
+                                                }
                                             }}
                                             style={{ fontSize: 12 }}
+                                            disabled={!referralCode || referralCode === 'Generating...'}
                                         >
                                             Copy
                                         </button>
                                     </div>
+                                    {(!referralCode || referralCode === 'Generating...') && (
+                                        <div style={{ fontSize: 12, color: '#0c4a6e', marginTop: 4 }}>
+                                            Creating your personal code... (Reload if it takes too long)
+                                        </div>
+                                    )}
                                 </div>
                             )}
 
