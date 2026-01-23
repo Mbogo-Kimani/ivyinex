@@ -16,10 +16,16 @@ export default function ResetPassword() {
     const [tokenValid, setTokenValid] = useState(true);
 
     useEffect(() => {
+        if (!router.isReady) return;
+
+        // Only set invalid if token is completely missing from URL
         if (!token) {
             setTokenValid(false);
+        } else {
+            // Reset validation to true initially, let the API decide or user input proceed
+            setTokenValid(true);
         }
-    }, [token]);
+    }, [router.isReady, token]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
