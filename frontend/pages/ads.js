@@ -3,16 +3,22 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
+import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '../contexts/ToastContext';
 import Header from '../components/Header';
+import AuthModal from '../components/AuthModal';
 import AuthModal from '../components/AuthModal';
 
 export default function Ads() {
     const router = useRouter();
     const { isAuthenticated } = useAuth();
     const { showError } = useToast();
+    const { isAuthenticated } = useAuth();
+    const { showError } = useToast();
     const [ads, setAds] = useState([]);
     const [loading, setLoading] = useState(true);
     const [autoReconnected, setAutoReconnected] = useState(false);
+    const [showLoginModal, setShowLoginModal] = useState(false);
     const [showLoginModal, setShowLoginModal] = useState(false);
 
     const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'https://ivyinex.onrender.com';
@@ -32,6 +38,7 @@ export default function Ads() {
             setLoading(true);
             const response = await fetch(`${BACKEND_URL}/api/ads`);
             const data = await response.json();
+
 
             if (data.ok && data.ads) {
                 // Filter active ads
@@ -92,6 +99,13 @@ export default function Ads() {
         }
     };
 
+    const handleMyAccountClick = (e) => {
+        if (!isAuthenticated) {
+            e.preventDefault();
+            setShowLoginModal(true);
+        }
+    };
+
     const featuredAds = ads.filter(ad => ad.featured);
     const regularAds = ads.filter(ad => !ad.featured);
 
@@ -101,6 +115,11 @@ export default function Ads() {
             <div style={{ padding: 20, minHeight: '100vh', background: 'linear-gradient(180deg, #081425 0%, #1C3D50 100%)' }}>
                 <div className="container">
                     {/* Welcome Section */}
+                    <div style={{
+                        background: 'linear-gradient(135deg, var(--wifi-mtaani-primary) 0%, var(--wifi-mtaani-accent) 100%)',
+                        color: 'white',
+                        padding: 24,
+                        borderRadius: 16,
                     <div style={{
                         background: 'linear-gradient(135deg, var(--wifi-mtaani-primary) 0%, var(--wifi-mtaani-accent) 100%)',
                         color: 'white',
@@ -118,6 +137,7 @@ export default function Ads() {
                         </p>
                         <p style={{ fontSize: 16, opacity: 0.9, marginBottom: 16 }}>
                             {autoReconnected
+                            {autoReconnected
                                 ? 'You\'ve been automatically reconnected! Your subscription is still active.'
                                 : 'Welcome to Wifi Mtaani! Check out our latest promotions and community updates below.'
                             }
@@ -126,6 +146,12 @@ export default function Ads() {
                             <Link href="/" className="btn" style={{ background: 'rgba(255,255,255,0.2)', color: 'white', border: '1px solid rgba(255,255,255,0.3)' }}>
                                 Browse More Packages
                             </Link>
+                            <Link
+                                href="/account"
+                                className="btn ghost"
+                                onClick={handleMyAccountClick}
+                                style={{ color: 'white', border: '1px solid rgba(255,255,255,0.3)' }}
+                            >
                             <Link
                                 href="/account"
                                 className="btn ghost"
@@ -143,6 +169,8 @@ export default function Ads() {
                             <h2 style={{ marginBottom: 16, color: 'var(--wifi-mtaani-accent)', fontWeight: 600 }}>🔥 Featured Promotions</h2>
                             <div style={{ display: 'grid', gap: 16, gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
                                 {featuredAds.map(ad => (
+                                    <div
+                                        key={ad._id || ad.id}
                                     <div
                                         key={ad._id || ad.id}
                                         onClick={() => handleAdClick(ad)}
@@ -216,6 +244,8 @@ export default function Ads() {
                                 {regularAds.map(ad => (
                                     <div
                                         key={ad._id || ad.id}
+                                    <div
+                                        key={ad._id || ad.id}
                                         onClick={() => handleAdClick(ad)}
                                         style={{
                                             background: `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.9)), url(${ad.imageUrl || '/images/purple-placeholder.jpg'}) center/cover no-repeat`,
@@ -281,6 +311,14 @@ export default function Ads() {
                     </div>
                 </div>
             </div>
+
+            <AuthModal
+                isOpen={showLoginModal}
+                onClose={() => setShowLoginModal(false)}
+                title="Login Required"
+                message="You need to be logged in to view your account details. Please login or create an account to continue."
+                redirectPath="/account"
+            />
 
             <AuthModal
                 isOpen={showLoginModal}
