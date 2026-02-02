@@ -187,3 +187,9 @@
 {"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2026-01-22T12:30:49.017Z"}
 {"level":"warn","message":"MongoDB not connected, skipping cleanup job","timestamp":"2026-01-22T12:30:50.016Z"}
 {"level":"info","message":"MongoDB connected successfully","timestamp":"2026-01-22T12:30:50.237Z"}
+{"level":"info","message":"Email service initialized successfully","timestamp":"2026-02-02T18:36:29.301Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2026-02-02T18:36:33.553Z"}
+{"level":"info","message":"MongoDB connection established","timestamp":"2026-02-02T18:36:33.586Z"}
+{"level":"info","message":"Server started on port 5000","timestamp":"2026-02-02T18:36:33.639Z"}
+{"level":"info","message":"Cleanup job started","timestamp":"2026-02-02T18:36:36.130Z"}
+{"interval":"300s","level":"info","message":"Starting keep-alive job","serverUrl":"http://localhost:5000","timestamp":"2026-02-02T18:36:36.136Z"}
