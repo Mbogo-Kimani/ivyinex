@@ -15,7 +15,10 @@ const consumerSecret = process.env.DARAJA_CONSUMER_SECRET;
 const shortcode = process.env.DARAJA_SHORTCODE;
 const passkey = process.env.DARAJA_PASSKEY;
 const callbackUrl = process.env.DARAJA_CALLBACK_URL;
-const baseUrl = process.env.DARAJA_BASE_URL || 'https://sandbox.safaricom.co.ke';
+const baseUrl =
+  process.env.NODE_ENV === 'production'
+    ? 'https://api.safaricom.co.ke'
+    : 'https://sandbox.safaricom.co.ke';
 const isProduction = process.env.NODE_ENV === 'production' && baseUrl.includes('api.safaricom.co.ke');
 
 /**
@@ -84,10 +87,13 @@ async function getAccessToken() {
 
     logger.info('Fetching Daraja access token', { baseUrl });
 
-    const res = await axios.get(url, {
-      headers: { Authorization: `Basic ${auth}` },
-      timeout: 10000 // 10 second timeout
-    });
+    const res = await axios.post(url, body, {
+  headers: {
+    Authorization: `Bearer ${token}`,
+    'Content-Type': 'application/json'
+  },
+  timeout: 30000
+});
 
     if (!res.data || !res.data.access_token) {
       throw new Error('Invalid response from Daraja: missing access_token');
