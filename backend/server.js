@@ -10,6 +10,16 @@ const { startCleanupJob } = require('./jobs/cleanup');
 const { startKeepAlive } = require('./jobs/keepAlive');
 
 const app = express();
+app.use((req, res, next) => {
+  console.log("📥 INCOMING REQUEST");
+  console.log("Method:", req.method);
+  console.log("URL:", req.url);
+  console.log("Headers:", req.headers);
+  console.log("Body:", JSON.stringify(req.body, null, 2));
+  console.log("───────────────");
+  next();
+});
+
 
 // Configure CORS with specific origins
 const corsOptions = {
