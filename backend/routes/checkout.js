@@ -556,4 +556,64 @@ router.get('/status/:paymentId', async (req, res) => {
   }
 });
 
+/**
+ * POST /api/checkout/link-payment
+ * Authenticated user claims a successful payment (e.g. after guest checkout + login/register)
+ * Body: { paymentId }
+ */
+router.post('/link-payment', async (req, res) => {
+  try {
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    if (!token) return res.status(401).json({ error: 'No token provided' });
+
+    const jwt = require('jsonwebtoken');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.userId;
+
+    const { paymentId } = req.body;
+    if (!paymentId) return res.status(400).json({ error: 'Payment ID is required' });
+
+    const payment = await Payment.findById(paymentId);
+    if (!payment) return res.status(404).json({ error: 'Payment not found' });
+
+    // 1. Verify Payment is eligible for linking
+    if (payment.status !== 'success') {
+      return res.status(400).json({ error: 'Payment is not successful yet' });
+    }
+    if (payment.userId) {
+      if (payment.userId.toString() === userId) {
+        return res.json({ ok: true, message: 'Already linked to you' });
+      }
+      return res.status(400).json({ error: 'Payment is already linked to another user' });
+    }
+
+    // 2. Link Payment to User
+    payment.userId = userId;
+    await payment.save();
+
+    // 3. Find and Update Subscription
+    // Transfer subscription ownership to this user
+    const sub = await Subscription.findOne({ paymentId: payment._id });
+    if (sub) {
+      sub.userId = userId;
+      // Also look for device linking opportunities? 
+      // For now, just link user. Device is linked via MAC usually.
+      await sub.save();
+    }
+
+    // 4. Log Success
+    await LogModel.create({
+      level: 'info',
+      source: 'checkout',
+      message: 'payment-linked-to-user',
+      metadata: { paymentId, userId, subId: sub?._id }
+    });
+
+    res.json({ ok: true, message: 'Payment linked successfully', payment });
+  } catch (err) {
+    logger.error('Link payment error', { err: err.message, stack: err.stack });
+    res.status(500).json({ error: 'Failed to link payment' });
+  }
+});
+
 module.exports = router;

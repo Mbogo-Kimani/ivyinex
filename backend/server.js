@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 const logger = require('./utils/logger');
 const connectDB = require('./config/db');
 const routes = require('./routes');
+const { initJobs } = require('./jobs/cron');
 const { startCleanupJob } = require('./jobs/cleanup');
 const { startKeepAlive } = require('./jobs/keepAlive');
 
@@ -93,16 +94,6 @@ app.get('/', (req, res) => {
   });
 });
 
-// Keep-alive endpoint to prevent Render from sleeping
-app.get('/keep-alive', (req, res) => {
-  res.json({
-    ok: true,
-    message: 'Server is alive',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime()
-  });
-});
-
 // Enhanced health check for monitoring
 app.get('/health', (req, res) => {
   res.json({
@@ -137,6 +128,7 @@ async function startServer() {
       setTimeout(() => {
         if (mongoose.connection.readyState === 1) {
           startCleanupJob();
+          initJobs(); // Start new cron jobs
           // Start keep-alive job to prevent Render from sleeping
           startKeepAlive();
         } else {

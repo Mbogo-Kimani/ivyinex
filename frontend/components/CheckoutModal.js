@@ -14,12 +14,14 @@ import * as api from '../lib/api';
  */
 export default function CheckoutModal({ open, onClose, pkg, onRedeem, portalData }) {
     const [code, setCode] = useState('');
+    const [phone, setPhone] = useState('');
     const [loading, setLoading] = useState(false);
     const [macError, setMacError] = useState('');
     const [userPoints, setUserPoints] = useState(0);
     const [loadingPoints, setLoadingPoints] = useState(false);
     const { showError, showSuccess } = useToast();
     const { isAuthenticated } = useAuth();
+    const router = require('next/router').useRouter();
 
     if (!open || !pkg) return null;
 
@@ -39,6 +41,47 @@ export default function CheckoutModal({ open, onClose, pkg, onRedeem, portalData
             console.error('Failed to load user points:', err);
         } finally {
             setLoadingPoints(false);
+        }
+    };
+
+    const handleMpesaBuy = async () => {
+        setLoading(true);
+        try {
+            // Validate phone
+            const cleanPhone = phone.replace(/\D/g, '');
+            // Basic validation
+            if (cleanPhone.length < 9) {
+                throw new Error('Please enter a valid phone number');
+            }
+
+            // Start checkout
+            const normalizedMac = portalData?.mac ? normalizeMacAddress(portalData.mac) : null;
+
+            const res = await api.startCheckout({
+                phone,
+                packageKey: pkg.key,
+                mac: normalizedMac,
+                ip: portalData?.ip
+            });
+
+            // If successful, we get a paymentId (and maybe checkoutRequestID)
+            if (res.paymentId) {
+                // Store pending payment ID
+                localStorage.setItem('pendingPaymentId', res.paymentId);
+
+                showSuccess('STK Push sent! Check your phone.');
+                onClose();
+
+                // Redirect to success page (which is now pending/polling page)
+                router.push(`/checkout/success?paymentId=${res.paymentId}`);
+            } else {
+                showError('Failed to initiate payment. No payment ID returned.');
+            }
+
+        } catch (err) {
+            showError(err.message || 'M-Pesa checkout failed');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -123,13 +166,40 @@ export default function CheckoutModal({ open, onClose, pkg, onRedeem, portalData
                     </div>
                 )}
 
-                {/* Voucher Code Input - Always show */}
-                <div style={{ marginTop: 16 }}>
+                <div style={{ marginTop: 24, padding: '20px 0', borderTop: '1px solid rgba(255,255,255,0.1)', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                    <h4 style={{ margin: '0 0 12px 0', color: 'var(--wifi-mtaani-accent)' }}>Pay with M-Pesa</h4>
+                    <div className="row" style={{ gap: 10 }}>
+                        <div style={{ flex: 1 }}>
+                            <input
+                                className="input"
+                                type="tel"
+                                placeholder="07XX XXX XXX"
+                                value={phone}
+                                onChange={(e) => setPhone(e.target.value)}
+                            />
+                        </div>
+                        <button
+                            className="btn"
+                            style={{ background: '#25D366', borderColor: '#25D366', color: '#000' }}
+                            onClick={handleMpesaBuy}
+                            disabled={loading || !phone || phone.length < 9}
+                        >
+                            {loading ? 'Processing...' : `Pay KES ${pkg.priceKES}`}
+                        </button>
+                    </div>
+                </div>
+
+                <p className="kv" style={{ marginTop: 20, marginBottom: 8, textAlign: 'center' }}>
+                    — OR Redeem Voucher —
+                </p>
+
+                {/* Voucher Code Input */}
+                <div style={{ marginTop: 8 }}>
                     <label>Voucher Code</label>
                     <input className="input" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="ABC12345" />
                 </div>
 
-                {/* Points Information - Show if package supports points and user is authenticated */}
+                {/* Points Information */}
                 {isAuthenticated && pkg.pointsRequired > 0 && (
                     <div style={{ marginTop: 16, padding: 12, background: 'rgba(33, 175, 233, 0.1)', borderRadius: 8, border: '1px solid rgba(47, 231, 245, 0.3)' }}>
                         <div style={{ fontSize: 14, color: 'var(--wifi-mtaani-accent)' }}>
@@ -145,25 +215,25 @@ export default function CheckoutModal({ open, onClose, pkg, onRedeem, portalData
                 )}
 
                 <div style={{ marginTop: 16 }} className="row">
-                    {/* Voucher Redeem Button - Always show */}
-                    <button className="btn" onClick={handleRedeem} disabled={loading || !code}>
+                    {/* Voucher Redeem Button */}
+                    <button className="btn" onClick={handleRedeem} disabled={loading || !code} style={{ flex: 1 }}>
                         {loading ? 'Sending...' : 'Redeem Voucher'}
                     </button>
+                </div>
 
-                    {/* Use Points Button - Show if user has enough points */}
-                    {isAuthenticated && pkg.pointsRequired > 0 && userPoints >= pkg.pointsRequired && (
+                {/* Use Points Button */}
+                {isAuthenticated && pkg.pointsRequired > 0 && userPoints >= pkg.pointsRequired && (
+                    <div style={{ marginTop: 10 }}>
                         <button
-                            className="btn"
+                            className="btn full-width"
                             onClick={handleUsePoints}
                             disabled={loading}
                             style={{ background: '#10b981', color: 'white', border: 'none' }}
                         >
-                            {loading ? 'Processing...' : `Use ${pkg.pointsRequired} Points`}
+                            {loading ? 'Processing...' : `Purchase with ${pkg.pointsRequired} Points`}
                         </button>
-                    )}
-
-                    <button className="btn ghost" onClick={onClose}>Cancel</button>
-                </div>
+                    </div>
+                )}
             </div>
         </div>
     );
