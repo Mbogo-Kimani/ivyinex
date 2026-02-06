@@ -78,9 +78,9 @@ export default function AccountDashboard() {
     const activeSubscriptions = subscriptions.filter(sub => getSubscriptionStatus(sub) === 'active');
     const totalDevices = subscriptions.reduce((total, sub) => total + (sub.devices?.length || 0), 0);
 
-    if (!isAuthenticated) {
-        return null; // ProtectedRoute will handle redirect
-    }
+    // ProtectedRoute handles the loading and redirect logic
+    // We don't need to return null here, otherwise ProtectedRoute never mounts
+    // and cannot show the loading spinner or redirect the user.
 
     return (
         <ProtectedRoute>
