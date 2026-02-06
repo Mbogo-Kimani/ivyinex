@@ -168,216 +168,151 @@ router.post('/start', async (req, res) => {
 });
 
 /**
+ * Helper: Safely extract item from CallbackMetadata
+ */
+function getCallbackItem(items, name) {
+  if (!Array.isArray(items)) return null;
+  const found = items.find(i => i?.Name === name);
+  return found?.Value ?? null;
+}
+
+/**
+ * Helper: Normalize phone number safely
+ */
+function normalizePhone(phone) {
+  if (!phone) return null;
+  const str = String(phone);
+  // If starts with 254, replace with 0. If starts with +254, handle that too.
+  // The user requirement said: 2547XXXXXXXX -> 07XXXXXXXX
+  return str.startsWith('254') ? '0' + str.slice(3) : str;
+}
+
+/**
  * POST /api/checkout/daraja-callback
  * Daraja will POST the result here. We verify and then create subscription & grant access.
  * NOTE: You must configure DARAJA_CALLBACK_URL in env and secure this endpoint in production.
  */
 router.post('/daraja-callback', async (req, res) => {
-  // Daraja callback raw body: req.body
-  const cb = req.body;
-
-  // Log full callback for debugging (first 1000 chars)
-  const callbackLog = JSON.stringify(cb, null, 2);
-  logger.info('Daraja callback received - FULL', {
-    body: callbackLog.substring(0, 1000),
-    headers: req.headers,
-    method: req.method,
-    url: req.url
-  });
-
-  await LogModel.create({
-    level: 'info',
-    source: 'daraja-callback',
-    message: 'callback-received',
-    metadata: {
-      body: cb,
-      headers: req.headers,
-      timestamp: new Date().toISOString()
-    }
-  });
-  // Real implementation must validate and extract CheckoutRequestID and ResultCode/ResultDesc
   try {
-    // For MVP we expect the body contains checkoutRequestID and ResultCode
-    const body = cb.Body || cb;
-    const stkCallback = body.stkCallback || body;
-    // adapt to actual payload structure
-    const checkoutRequestID = stkCallback.CheckoutRequestID || (stkCallback.checkoutRequestID);
-    // SAFARICOM FIX: Cast ResultCode to Number because it might be a string "0"
-    let resultCode = stkCallback.ResultCode !== undefined ? stkCallback.ResultCode : (stkCallback.resultCode);
-    if (resultCode === undefined) resultCode = 1; // Default to error
-    resultCode = Number(resultCode);
-
-    const resultDesc = stkCallback.ResultDesc || stkCallback.resultDesc || 'OK';
-
-    logger.info('Daraja callback parsed', {
-      checkoutRequestID,
-      resultCode,
-      resultDesc,
-      hasBody: !!cb.Body,
-      hasStkCallback: !!stkCallback
+    // 1. Raw Logging (First thing)
+    // We log the raw body to ensure we have a record even if parsing fails later
+    const rawBody = req.body;
+    logger.info('Daraja callback received - RAW', {
+      bodySnippet: JSON.stringify(rawBody).substring(0, 1000) // Log first 1000 chars safety
     });
 
-    // Find payment by matching checkout id in providerPayload
-    let payment = await Payment.findOne({ 'providerPayload.CheckoutRequestID': checkoutRequestID });
+    // 2. Defensive Parsing
+    // Extract Body safely
+    const body = rawBody?.Body || rawBody;
+    const stkCallback = body?.stkCallback || body;
 
-    // Fallback logic by AccountReference removed as it is now a static string 'WiFi-Pay'
+    // Extract Critical Fields safely
+    const merchantRequestID = stkCallback?.MerchantRequestID || null;
+    const checkoutRequestID = stkCallback?.CheckoutRequestID || stkCallback?.checkoutRequestID || null;
 
-    // Last resort: find most recent pending payment (with time limit - last 10 minutes)
-    if (!payment) {
-      const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
-      payment = await Payment.findOne({
-        status: 'pending',
-        createdAt: { $gte: tenMinutesAgo }
-      }).sort({ createdAt: -1 });
+    // ResultCode: Handle string/number and missing/undefined
+    let resultCode = stkCallback?.ResultCode;
+    if (resultCode === undefined) resultCode = stkCallback?.resultCode; // fallback
 
-      if (payment) {
-        logger.warn('Payment found by fallback (recent pending)', {
-          paymentId: payment._id,
-          checkoutRequestID,
-          createdAt: payment.createdAt
-        });
-      }
+    // Convert to Number safely. If null/undefined/NaN, default to non-zero (failure) to be safe.
+    const numericResultCode = resultCode !== undefined && resultCode !== null ? Number(resultCode) : -1;
+
+    const resultDesc = String(stkCallback?.ResultDesc || stkCallback?.resultDesc || 'Unknown Result');
+
+    // 3. Log Parsed Data
+    logger.info('Daraja callback parsed', {
+      merchantRequestID,
+      checkoutRequestID,
+      numericResultCode,
+      resultDesc
+    });
+
+    // 4. Validate Critical Data
+    if (!checkoutRequestID) {
+      logger.error('Missing CheckoutRequestID in callback', { body: rawBody });
+      // Return 200 to stop Daraja retries
+      return res.status(200).json({ ResultCode: 0, ResultDesc: "Accepted" });
     }
 
-    if (!payment) {
-      // enhanced debug logging for not found
-      const recentPayments = await Payment.find({ status: 'pending' })
-        .sort({ createdAt: -1 })
-        .limit(3)
-        .select('_id providerPayload.CheckoutRequestID createdAt phone');
+    // 5. Find Payment Session
+    // We use the CheckoutRequestID to find the pending payment
+    const payment = await Payment.findOne({
+      'providerPayload.CheckoutRequestID': checkoutRequestID
+    });
 
+    if (!payment) {
+      // Log critical error but return 200
+      logger.error('Payment session not found for callback', { checkoutRequestID });
       await LogModel.create({
-        level: 'error', // escalated to error to be noticed
+        level: 'error',
         source: 'daraja-callback',
-        message: 'payment-not-found-fatal',
-        metadata: {
-          checkoutRequestID,
-          resultCode,
-          resultDesc,
-          callbackBody: JSON.stringify(cb).substring(0, 1000),
-          recentPendingPayments: recentPayments
-        }
+        message: 'session-not-found',
+        metadata: { checkoutRequestID, numericResultCode, resultDesc }
       });
-
-      logger.error('Payment not found for callback - FATAL', {
-        checkoutRequestID,
-        resultCode,
-        resultDesc,
-        recentPendingPayments: recentPayments.map(p => ({
-          id: p._id,
-          reqId: p.providerPayload?.CheckoutRequestID,
-          phone: p.phone
-        }))
-      });
-      return res.status(200).send('payment not found');
+      return res.status(200).json({ ResultCode: 0, ResultDesc: "Accepted" });
     }
 
-    // Idempotency: If payment is already success, don't re-process
+    // 6. Idempotency Check
     if (payment.status === 'success') {
-      logger.info('Payment already passed, ignoring callback', { paymentId: payment._id });
-      return res.status(200).send('already processed');
+      logger.info('Payment already completed successfully. Ignoring duplicate/late callback.', {
+        paymentId: payment._id,
+        checkoutRequestID
+      });
+      return res.status(200).json({ ResultCode: 0, ResultDesc: "Accepted" });
     }
 
-    if (resultCode === 0) {
-      // Payment successful - validate and process
+    // 7. Update Payment Record with Callback Data
+    // We persist the raw results regardless of success/failure
+    payment.providerPayload = {
+      ...payment.providerPayload,
+      ...stkCallback, // store full callback details
+      callbackProcessedAt: new Date()
+    };
 
-      // Extract callback data for validation
-      let callbackMetadata = stkCallback.CallbackMetadata?.Item;
-      if (!Array.isArray(callbackMetadata)) callbackMetadata = [];
+    // 8. Result Logic
+    if (numericResultCode === 0) {
+      // === SUCCESS CASE ===
 
-      const callbackAmount = callbackMetadata.find(i => i.Name === 'Amount')?.Value;
-      const callbackPhone = callbackMetadata.find(i => i.Name === 'PhoneNumber')?.Value;
-      const mpesaReceiptNumber = callbackMetadata.find(i => i.Name === 'MpesaReceiptNumber')?.Value;
+      // Safe Metadata Extraction
+      const items = stkCallback?.CallbackMetadata?.Item;
+      const amount = getCallbackItem(items, 'Amount');
+      const mpesaReceiptNumber = getCallbackItem(items, 'MpesaReceiptNumber');
+      const transactionDate = getCallbackItem(items, 'TransactionDate');
+      const phoneNumber = getCallbackItem(items, 'PhoneNumber');
 
-      // Validate amount matches payment record
-      if (callbackAmount && Math.round(callbackAmount) !== Math.round(payment.amountKES)) {
-        await LogModel.create({
-          level: 'error',
-          source: 'daraja-callback',
-          message: 'amount-mismatch',
-          metadata: {
-            paymentId: payment._id,
-            expectedAmount: payment.amountKES,
-            receivedAmount: callbackAmount
-          }
-        });
-        logger.error('Payment amount mismatch', {
-          paymentId: payment._id,
+      // Update Payload with extracted clean values
+      payment.providerPayload.mpesaReceiptNumber = mpesaReceiptNumber;
+      payment.providerPayload.transactionDate = transactionDate;
+      payment.providerPayload.payerPhone = phoneNumber;
+
+      // Validate Amount (Optional warning, don't fail)
+      if (amount && payment.amountKES && Math.abs(Number(amount) - payment.amountKES) > 1) {
+        logger.warn('Payment amount mismatch', {
           expected: payment.amountKES,
-          received: callbackAmount
+          received: amount,
+          paymentId: payment._id
         });
-        // Still mark as success but log the issue
       }
 
-      // Validate phone number matches (normalize for comparison)
-      if (callbackPhone && payment.phone) {
-        const normalizedCallbackPhone = callbackPhone.replace(/[\s\-+]/g, '');
-        const normalizedPaymentPhone = payment.phone.replace(/[\s\-+]/g, '');
-        if (normalizedCallbackPhone !== normalizedPaymentPhone && !normalizedCallbackPhone.endsWith(normalizedPaymentPhone.slice(-9))) {
-          await LogModel.create({
-            level: 'warn',
-            source: 'daraja-callback',
-            message: 'phone-mismatch',
-            metadata: {
-              paymentId: payment._id,
-              expectedPhone: payment.phone,
-              receivedPhone: callbackPhone
-            }
-          });
-          logger.warn('Payment phone mismatch', {
-            paymentId: payment._id,
-            expected: payment.phone,
-            received: callbackPhone
-          });
-        }
-      }
+      // === PROVISIONING ===
 
-      // Use stored packageKey from payment record
-      const packageKey = payment.packageKey;
-      if (!packageKey) {
-        await LogModel.create({
-          level: 'error',
-          source: 'daraja-callback',
-          message: 'packageKey-missing',
-          metadata: { paymentId: payment._id }
-        });
-        logger.error('Package key missing in payment record', { paymentId: payment._id });
-        payment.status = 'failed';
-        payment.providerPayload = { ...stkCallback, error: 'Package key missing' };
-        await payment.save();
-        return res.status(200).send('package key missing');
-      }
-
-      const pkg = await Package.findOne({ key: packageKey });
+      // A. Grant Subscription
+      const pkg = await Package.findOne({ key: payment.packageKey });
       if (!pkg) {
-        await LogModel.create({
-          level: 'error',
-          source: 'daraja-callback',
-          message: 'package-not-found',
-          metadata: { packageKey, paymentId: payment._id }
-        });
-        logger.error('Package not found', { packageKey, paymentId: payment._id });
-        payment.status = 'failed';
-        payment.providerPayload = { ...stkCallback, error: 'Package not found' };
-        await payment.save();
-        return res.status(200).send('package not found');
-      }
-
-      // Use stored mac & ip from payment record
-      const mac = payment.mac;
-      const ip = payment.ip;
-
-      // Create subscription entry with error handling
-      // Note: We'll update payment status to 'success' only after subscription is created
-      let sub = null;
-      try {
+        logger.error('Package not found during provisioning', { packageKey: payment.packageKey });
+        // We still mark payment as success because we took user's money!
+        // We just flag it for manual intervention
+        payment.status = 'success_no_package';
+      } else {
+        // Create Subscription
         const now = new Date();
         const endAt = new Date(now.getTime() + pkg.durationSeconds * 1000);
-        sub = await Subscription.create({
+
+        const sub = await Subscription.create({
           userId: payment.userId || null,
           packageKey: pkg.key,
           packageName: pkg.name,
-          devices: mac ? [{ mac }] : [],
+          devices: payment.mac ? [{ mac: payment.mac }] : [],
           startAt: now,
           endAt,
           active: true,
@@ -389,163 +324,71 @@ router.post('/daraja-callback', async (req, res) => {
           paymentMethod: 'daraja'
         });
 
-        await LogModel.create({
-          level: 'info',
-          source: 'daraja-callback',
-          message: 'subscription-created',
-          metadata: {
-            paymentId: payment._id,
-            subId: sub._id,
-            mac,
-            ip,
-            packageKey: pkg.key
+        // B. Grant MikroTik Access (if MAC present)
+        if (payment.mac) {
+          try {
+            await grantAccess({
+              mac: payment.mac,
+              ip: payment.ip,
+              comment: `payment:${payment._id}`,
+              until: endAt
+            });
+            // Update sub with binding info
+            sub.mikrotikEntry = {
+              type: 'ip-binding',
+              mac: payment.mac,
+              ip: payment.ip,
+              until: endAt,
+              grantedAt: new Date()
+            };
+            await sub.save();
+          } catch (mikrotikErr) {
+            logger.error('Failed to grant MikroTik access', { err: mikrotikErr.message });
+            // Don't fail the request, just log. Subscription is active.
           }
-        });
-        logger.info('Subscription created successfully', {
-          paymentId: payment._id,
-          subId: sub._id,
-          packageKey: pkg.key
-        });
-
-        // Update payment status to success only after subscription is created
-        payment.status = 'success';
-        payment.providerPayload = {
-          ...stkCallback,
-          mpesaReceiptNumber: mpesaReceiptNumber,
-          processedAt: new Date()
-        };
-        await payment.save();
-      } catch (subError) {
-        logger.error('Failed to create subscription', {
-          err: subError.message,
-          stack: subError.stack,
-          paymentId: payment._id
-        });
-        await LogModel.create({
-          level: 'error',
-          source: 'daraja-callback',
-          message: 'subscription-creation-failed',
-          metadata: {
-            err: subError.message,
-            paymentId: payment._id
-          }
-        });
-        // Payment is already marked as success, but subscription failed
-        // In production, you might want to implement a retry mechanism or manual review
-        return res.status(200).send('subscription creation failed');
-      }
-
-      // Grant MikroTik access if MAC is present
-      if (mac && sub) {
-        try {
-          const now = new Date();
-          const endAt = new Date(now.getTime() + pkg.durationSeconds * 1000);
-          await grantAccess({
-            mac,
-            ip,
-            comment: `payment:${payment._id}`,
-            until: endAt
-          });
-          sub.mikrotikEntry = {
-            type: 'ip-binding',
-            mac,
-            ip,
-            until: endAt,
-            grantedAt: new Date()
-          };
-          await sub.save();
-          await LogModel.create({
-            level: 'info',
-            source: 'mikrotik',
-            message: 'access-granted',
-            metadata: { subId: sub._id, mac, ip, paymentId: payment._id }
-          });
-          logger.info('MikroTik access granted', {
-            subId: sub._id,
-            mac,
-            ip,
-            paymentId: payment._id
-          });
-        } catch (mikrotikError) {
-          // Log error but don't fail the entire process
-          // Subscription is created, access can be granted manually if needed
-          logger.error('Failed to grant MikroTik access', {
-            err: mikrotikError.message,
-            stack: mikrotikError.stack,
-            subId: sub._id,
-            mac,
-            ip
-          });
-          await LogModel.create({
-            level: 'error',
-            source: 'mikrotik',
-            message: 'access-grant-failed',
-            metadata: {
-              err: mikrotikError.message,
-              subId: sub._id,
-              mac,
-              ip,
-              paymentId: payment._id
-            }
-          });
-          // Continue - subscription is created, access issue can be resolved manually
         }
       }
 
-      return res.status(200).send('ok');
-    } else {
-      // Payment failed - get user-friendly error message
-      const errorMessage = getErrorMessage(resultCode, resultDesc);
-
-      // Payment failed - update status and log
-      payment.status = 'failed';
-      payment.providerPayload = {
-        ...stkCallback,
-        failedAt: new Date(),
-        errorMessage: errorMessage, // Store user-friendly error message
-        errorCode: resultCode
-      };
+      // Mark Payment as Success
+      payment.status = 'success';
       await payment.save();
-      await LogModel.create({
-        level: 'warn',
-        source: 'daraja-callback',
-        message: 'payment-failed',
-        metadata: {
-          paymentId: payment._id,
-          resultCode,
-          resultDesc,
-          errorMessage,
-          packageKey: payment.packageKey
-        }
-      });
-      logger.warn('Payment failed', {
+
+      // Log Success
+      logger.info('Payment processed successfully', {
         paymentId: payment._id,
-        resultCode,
-        resultDesc,
-        errorMessage,
-        packageKey: payment.packageKey
+        receipt: mpesaReceiptNumber,
+        amount: amount
       });
-      return res.status(200).send('failed');
+
+    } else {
+      // === FAILURE CASE ===
+      // ResultCode !== 0
+      payment.status = 'failed';
+      const userMsg = getErrorMessage(numericResultCode, resultDesc);
+
+      // Store error details
+      payment.providerPayload.errorCode = numericResultCode;
+      payment.providerPayload.errorMessage = userMsg;
+
+      await payment.save();
+
+      logger.warn('Payment failed via callback', {
+        paymentId: payment._id,
+        code: numericResultCode,
+        desc: resultDesc
+      });
     }
+
+    // 9. Always Return 200 OK
+    return res.status(200).json({ ResultCode: 0, ResultDesc: "Accepted" });
+
   } catch (err) {
-    logger.error('Daraja callback error', {
-      err: err.message,
-      stack: err.stack,
-      body: req.body
-    });
-    await LogModel.create({
-      level: 'error',
-      source: 'daraja-callback',
-      message: 'callback-error',
-      metadata: {
-        err: err.message,
-        stack: err.stack,
-        body: req.body
-      }
-    });
-    // Always return 200 to Daraja to acknowledge receipt
-    // Even if we have errors, we don't want Daraja to retry
-    return res.status(200).send('error');
+    // 10. Global Error Handler
+    // Catch ANY crash in the logic above
+    logger.error('Daraja callback fatal error', { err: err.message, stack: err.stack });
+
+    // Still return 200 to Daraja to prevent retry loops of a broken handler
+    return res.status(200).json({ ResultCode: 0, ResultDesc: "Accepted" });
   }
 });
 
