@@ -202,7 +202,11 @@ router.post('/daraja-callback', async (req, res) => {
     const stkCallback = body.stkCallback || body;
     // adapt to actual payload structure
     const checkoutRequestID = stkCallback.CheckoutRequestID || (stkCallback.checkoutRequestID);
-    const resultCode = stkCallback.ResultCode !== undefined ? stkCallback.ResultCode : (stkCallback.resultCode || 0);
+    // SAFARICOM FIX: Cast ResultCode to Number because it might be a string "0"
+    let resultCode = stkCallback.ResultCode !== undefined ? stkCallback.ResultCode : (stkCallback.resultCode);
+    if (resultCode === undefined) resultCode = 1; // Default to error
+    resultCode = Number(resultCode);
+
     const resultDesc = stkCallback.ResultDesc || stkCallback.resultDesc || 'OK';
 
     logger.info('Daraja callback parsed', {
@@ -278,7 +282,9 @@ router.post('/daraja-callback', async (req, res) => {
       // Payment successful - validate and process
 
       // Extract callback data for validation
-      const callbackMetadata = stkCallback.CallbackMetadata?.Item || [];
+      let callbackMetadata = stkCallback.CallbackMetadata?.Item;
+      if (!Array.isArray(callbackMetadata)) callbackMetadata = [];
+
       const callbackAmount = callbackMetadata.find(i => i.Name === 'Amount')?.Value;
       const callbackPhone = callbackMetadata.find(i => i.Name === 'PhoneNumber')?.Value;
       const mpesaReceiptNumber = callbackMetadata.find(i => i.Name === 'MpesaReceiptNumber')?.Value;
