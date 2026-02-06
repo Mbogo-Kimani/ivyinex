@@ -159,8 +159,9 @@ async function stkPush({
     PartyB: shortcode,
     PhoneNumber: normalizedPhone,
     CallBackURL: callbackUrl,
-    AccountReference: accountRef,
-    TransactionDesc: transactionDesc
+    // Safaricom Limits: AccountReference (12 chars), TransactionDesc (13 chars)
+    AccountReference: accountRef.substring(0, 12),
+    TransactionDesc: transactionDesc.substring(0, 13)
   };
 
   const url = `${baseUrl}/mpesa/stkpush/v1/processrequest`;
@@ -169,7 +170,8 @@ async function stkPush({
     logger.info('Initiating STK push', {
       phone: normalizedPhone,
       amount,
-      accountRef
+      accountRef,
+      callbackUrl // Log the callback URL being sent
     });
 
     const res = await axios.post(url, body, {

@@ -29,17 +29,17 @@ function getErrorMessage(resultCode, resultDesc) {
     2002: 'Insufficient M-Pesa balance. Please top up your account and try again.',
     2003: 'Insufficient M-Pesa balance. Please top up your account and try again.'
   };
-  
+
   // Return user-friendly message if available, otherwise use resultDesc
   if (errorMessages[resultCode]) {
     return errorMessages[resultCode];
   }
-  
+
   // Fallback to resultDesc if it's meaningful, otherwise generic message
   if (resultDesc && resultDesc !== 'OK' && resultDesc !== 'The service request is processed successfully.') {
     return resultDesc;
   }
-  
+
   return 'Payment failed. Please try again.';
 }
 
@@ -88,7 +88,7 @@ router.post('/start', async (req, res) => {
     // TODO: store pending context in DB (we use payment._id for now)
     // call STK push
     try {
-      const stk = await stkPush({ phone, amount: pkg.priceKES, accountRef: `hotspot_${payment._id}` });
+      const stk = await stkPush({ phone, amount: pkg.priceKES, accountRef: 'WiFi-Pay' });
       // keep provider payload
       payment.providerPayload = stk;
       await payment.save();
@@ -116,17 +116,17 @@ router.post('/start', async (req, res) => {
 
       // Update payment status to failed
       payment.status = 'failed';
-      payment.providerPayload = { 
+      payment.providerPayload = {
         error: err.message,
         failedAt: new Date()
       };
       await payment.save();
 
       // Check if it's a merchant configuration error
-      const isMerchantError = err.message.includes('Merchant') || 
-                             err.message.includes('shortcode') || 
-                             err.message.includes('passkey') ||
-                             err.message.includes('500.001.1001');
+      const isMerchantError = err.message.includes('Merchant') ||
+        err.message.includes('shortcode') ||
+        err.message.includes('passkey') ||
+        err.message.includes('500.001.1001');
 
       // Return user-friendly error message
       // For merchant errors, provide helpful guidance
@@ -175,25 +175,25 @@ router.post('/start', async (req, res) => {
 router.post('/daraja-callback', async (req, res) => {
   // Daraja callback raw body: req.body
   const cb = req.body;
-  
+
   // Log full callback for debugging (first 1000 chars)
   const callbackLog = JSON.stringify(cb, null, 2);
-  logger.info('Daraja callback received - FULL', { 
+  logger.info('Daraja callback received - FULL', {
     body: callbackLog.substring(0, 1000),
     headers: req.headers,
     method: req.method,
     url: req.url
   });
-  
-  await LogModel.create({ 
-    level: 'info', 
-    source: 'daraja-callback', 
-    message: 'callback-received', 
-    metadata: { 
+
+  await LogModel.create({
+    level: 'info',
+    source: 'daraja-callback',
+    message: 'callback-received',
+    metadata: {
       body: cb,
       headers: req.headers,
       timestamp: new Date().toISOString()
-    } 
+    }
   });
   // Real implementation must validate and extract CheckoutRequestID and ResultCode/ResultDesc
   try {
@@ -204,10 +204,10 @@ router.post('/daraja-callback', async (req, res) => {
     const checkoutRequestID = stkCallback.CheckoutRequestID || (stkCallback.checkoutRequestID);
     const resultCode = stkCallback.ResultCode !== undefined ? stkCallback.ResultCode : (stkCallback.resultCode || 0);
     const resultDesc = stkCallback.ResultDesc || stkCallback.resultDesc || 'OK';
-    
-    logger.info('Daraja callback parsed', { 
-      checkoutRequestID, 
-      resultCode, 
+
+    logger.info('Daraja callback parsed', {
+      checkoutRequestID,
+      resultCode,
       resultDesc,
       hasBody: !!cb.Body,
       hasStkCallback: !!stkCallback
@@ -216,29 +216,7 @@ router.post('/daraja-callback', async (req, res) => {
     // Find payment by matching checkout id in providerPayload
     let payment = await Payment.findOne({ 'providerPayload.CheckoutRequestID': checkoutRequestID });
 
-    // If not found by CheckoutRequestID, try to find by account reference in callback metadata
-    if (!payment && stkCallback.CallbackMetadata?.Item) {
-      const accountRefItem = stkCallback.CallbackMetadata.Item.find(i => i.Name === 'AccountReference');
-      if (accountRefItem?.Value) {
-        const accountRef = accountRefItem.Value;
-        // AccountRef format: hotspot_<payment._id>
-        if (accountRef.startsWith('hotspot_')) {
-          const paymentIdFromRef = accountRef.replace('hotspot_', '');
-          try {
-            payment = await Payment.findById(paymentIdFromRef);
-            if (payment) {
-              logger.info('Payment found by account reference', { 
-                paymentId: payment._id, 
-                checkoutRequestID,
-                accountRef 
-              });
-            }
-          } catch (err) {
-            logger.warn('Invalid payment ID in account reference', { accountRef, err: err.message });
-          }
-        }
-      }
-    }
+    // Fallback logic by AccountReference removed as it is now a static string 'WiFi-Pay'
 
     // Last resort: find most recent pending payment (with time limit - last 10 minutes)
     if (!payment) {
@@ -247,7 +225,7 @@ router.post('/daraja-callback', async (req, res) => {
         status: 'pending',
         createdAt: { $gte: tenMinutesAgo }
       }).sort({ createdAt: -1 });
-      
+
       if (payment) {
         logger.warn('Payment found by fallback (recent pending)', {
           paymentId: payment._id,
@@ -258,24 +236,42 @@ router.post('/daraja-callback', async (req, res) => {
     }
 
     if (!payment) {
+      // enhanced debug logging for not found
+      const recentPayments = await Payment.find({ status: 'pending' })
+        .sort({ createdAt: -1 })
+        .limit(3)
+        .select('_id providerPayload.CheckoutRequestID createdAt phone');
+
       await LogModel.create({
-        level: 'warn',
+        level: 'error', // escalated to error to be noticed
         source: 'daraja-callback',
-        message: 'payment-not-found',
-        metadata: { 
-          checkoutRequestID, 
-          resultCode, 
+        message: 'payment-not-found-fatal',
+        metadata: {
+          checkoutRequestID,
+          resultCode,
           resultDesc,
-          callbackBody: JSON.stringify(cb).substring(0, 500)
+          callbackBody: JSON.stringify(cb).substring(0, 1000),
+          recentPendingPayments: recentPayments
         }
       });
-      logger.warn('Payment not found for callback', { 
+
+      logger.error('Payment not found for callback - FATAL', {
         checkoutRequestID,
         resultCode,
         resultDesc,
-        availablePayments: await Payment.countDocuments({ status: 'pending' })
+        recentPendingPayments: recentPayments.map(p => ({
+          id: p._id,
+          reqId: p.providerPayload?.CheckoutRequestID,
+          phone: p.phone
+        }))
       });
       return res.status(200).send('payment not found');
+    }
+
+    // Idempotency: If payment is already success, don't re-process
+    if (payment.status === 'success') {
+      logger.info('Payment already passed, ignoring callback', { paymentId: payment._id });
+      return res.status(200).send('already processed');
     }
 
     if (resultCode === 0) {
@@ -369,8 +365,8 @@ router.post('/daraja-callback', async (req, res) => {
       // Note: We'll update payment status to 'success' only after subscription is created
       let sub = null;
       try {
-      const now = new Date();
-      const endAt = new Date(now.getTime() + pkg.durationSeconds * 1000);
+        const now = new Date();
+        const endAt = new Date(now.getTime() + pkg.durationSeconds * 1000);
         sub = await Subscription.create({
           userId: payment.userId || null,
           packageKey: pkg.key,
@@ -451,7 +447,7 @@ router.post('/daraja-callback', async (req, res) => {
             until: endAt,
             grantedAt: new Date()
           };
-        await sub.save();
+          await sub.save();
           await LogModel.create({
             level: 'info',
             source: 'mikrotik',
@@ -494,7 +490,7 @@ router.post('/daraja-callback', async (req, res) => {
     } else {
       // Payment failed - get user-friendly error message
       const errorMessage = getErrorMessage(resultCode, resultDesc);
-      
+
       // Payment failed - update status and log
       payment.status = 'failed';
       payment.providerPayload = {
@@ -567,7 +563,7 @@ router.get('/test-callback', (req, res) => {
 router.post('/test-callback', async (req, res) => {
   try {
     const { paymentId, resultCode = 1, resultDesc = 'Insufficient balance' } = req.body;
-    
+
     if (!paymentId) {
       return res.status(400).json({ error: 'paymentId required' });
     }
@@ -616,7 +612,7 @@ router.get('/pending-payments', async (req, res) => {
       .sort({ createdAt: -1 })
       .limit(10)
       .select('_id amountKES packageKey phone createdAt providerPayload');
-    
+
     res.json({
       count: pendingPayments.length,
       payments: pendingPayments.map(p => ({
@@ -642,14 +638,17 @@ router.get('/pending-payments', async (req, res) => {
 router.get('/status/:paymentId', async (req, res) => {
   try {
     const { paymentId } = req.params;
-    
+
+    // Prevent caching of status checks
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+
     // Validate paymentId format
     if (!paymentId || paymentId.length < 10) {
       return res.status(400).json({ error: 'Invalid payment ID' });
     }
 
     const payment = await Payment.findById(paymentId);
-    
+
     if (!payment) {
       return res.status(404).json({ error: 'Payment not found' });
     }
@@ -671,7 +670,7 @@ router.get('/status/:paymentId', async (req, res) => {
       } else {
         errorMessage = 'Payment failed. Please try again.';
       }
-      
+
       logger.info('Payment status check - failed payment', {
         paymentId: payment._id,
         errorCode,
